@@ -812,9 +812,10 @@ function Drawer({task,onClose,setStage,setRoot,onDelete,assignees}){
   useEffect(()=>{ const onKey=e=>{if(e.key==='Escape')onClose();}; window.addEventListener('keydown',onKey); return ()=>window.removeEventListener('keydown',onKey); },[onClose]);
   useEffect(()=>{ setEditMode(false); },[id]);
   const cur=currentStage(task);
-  const [openStage,setOpenStage]=useState(cur);
-  useEffect(()=>{ setOpenStage(cur); },[id,cur]);  // 단계 진입(또는 task 전환) 시 해당 단계 자동 펼침
-  const acc=n=>({open:openStage===n,onToggle:()=>setOpenStage(p=>p===n?0:n)});
+  const [openSet,setOpenSet]=useState(()=>new Set([cur]));        // 여러 단계 동시 펼침 가능
+  useEffect(()=>{ setOpenSet(new Set([currentStage(task)])); },[id]);          // task 전환 시 현재 단계만 펼침
+  useEffect(()=>{ setOpenSet(p=>new Set([...p,cur])); },[cur]);                // 단계 전진 시 새 단계 추가 펼침
+  const acc=n=>({open:openSet.has(n),onToggle:()=>setOpenSet(p=>{const s=new Set(p); s.has(n)?s.delete(n):s.add(n); return s;})});
   const startEdit=()=>{ setEf({storeId:task.storeId,storeName:task.storeName,sourcingDate:task.sourcingDate,assignee:task.assignee}); setEditMode(true); };
   const efOk=ef&&ef.storeId.trim()&&ef.storeName.trim()&&ef.sourcingDate&&ef.assignee;
   const saveEdit=()=>{
