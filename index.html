@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>해피콜 워크플로우 대시보드</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.4/babel.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','Pretendard','Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#EEF1F8;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;letter-spacing:-0.011em;font-feature-settings:'cv02','cv03','cv04','tnum';color:#1E293B}
+    input,select,textarea,button{font-family:inherit}
+    ::-webkit-scrollbar{width:8px;height:8px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:#C7CEDC;border-radius:4px;border:2px solid transparent;background-clip:padding-box}
+    ::-webkit-scrollbar-thumb:hover{background:#A8B2C6;background-clip:padding-box}
+    #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:#EEF1F8;z-index:9999}
+    .spin{width:34px;height:34px;border:3px solid #DCE2EE;border-top-color:#3B82F6;border-radius:50%;animation:sp .7s linear infinite}
+    @keyframes sp{to{transform:rotate(360deg)}}
+    @keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+    .row-item{transition:background .14s}
+    .row-item:hover{background:rgba(59,130,246,.05)!important}
+    .bar{transition:filter .14s,transform .14s;cursor:pointer}
+    .bar:hover{filter:brightness(1.05);transform:translateY(-1px)}
+    .nbtn{transition:background .14s;cursor:pointer}
+    .nbtn:hover{background:#EEF1F8!important}
+    .selbtn{transition:border-color .14s,box-shadow .14s,background-color .14s}
+    .selbtn:hover{border-color:#CBD5E1!important;box-shadow:0 2px 8px -2px rgba(16,24,40,.12)!important}
+    input:focus,select:focus,textarea:focus{outline:2px solid #3B82F6;outline-offset:-1px}
+  </style>
+</head>
+<body>
+  <div id="loading"><div class="spin"></div><span style="color:#94A3B8;font-size:13px">Loading...</span></div>
+  <div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo, useRef, useEffect } = React;
+
+/* ── Icons ─────────────────────────────────────────────────────────── */
+const Ic = ({size=16,style:s={},children}) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={s}>{children}</svg>
+);
+const IcGear    = p => <Ic {...p}><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></Ic>;
+const IcChevL   = p => <Ic {...p}><polyline points="15 18 9 12 15 6"/></Ic>;
+const IcChevR   = p => <Ic {...p}><polyline points="9 18 15 12 9 6"/></Ic>;
+const IcChevD   = p => <Ic {...p}><polyline points="6 9 12 15 18 9"/></Ic>;
+const IcPlus    = p => <Ic {...p}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></Ic>;
+const IcX       = p => <Ic {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></Ic>;
+const IcEdit    = p => <Ic {...p}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></Ic>;
+const IcTrash   = p => <Ic {...p}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></Ic>;
+const IcCheck   = p => <Ic {...p}><polyline points="20 6 9 17 4 12"/></Ic>;
+const IcList    = p => <Ic {...p}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></Ic>;
+const IcUsers   = p => <Ic {...p}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></Ic>;
+const IcTrend   = p => <Ic {...p}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></Ic>;
+const IcArchive = p => <Ic {...p}><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></Ic>;
+const IcHome    = p => <Ic {...p}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></Ic>;
+const IcSearch  = p => <Ic {...p}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></Ic>;
+const IcClock   = p => <Ic {...p}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></Ic>;
+const IcDownload= p => <Ic {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></Ic>;
+const IcUpload  = p => <Ic {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></Ic>;
+const IcAlert   = p => <Ic {...p}><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></Ic>;
+const IcFunnel  = p => <Ic {...p}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></Ic>;
+
+/* ── Helpers ─────────────────────────────────────────────────────────── */
+const today   = new Date();
+const fmt     = d => d.toISOString().split('T')[0];
+const addDays = (b,n) => { const d=new Date(b); d.setDate(d.getDate()+n); return d; };
+const dt      = d => new Date(today.getTime()-d*86400000);
+const iso     = d => dt(d).toISOString();
+const daysBetween = (a,b)=>Math.max(0,Math.round((new Date(a)-new Date(b))/86400000));
+const round1  = n => Math.round(n*10)/10;
+const uid     = ()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const getMonday = (base, weekOff=0) => {
+  const d=new Date(base); d.setHours(0,0,0,0);
+  const dow=d.getDay(); const diff=dow===0?-6:1-dow;
+  d.setDate(d.getDate()+diff+weekOff*7); return d;
+};
+
+/* ── Stage definitions ─────────────────────────────────────────────────── */
+const STAGE_TITLES=[
+  '해피콜 전 준비사항','테블릿 셋팅','계약자 정보 확인','계좌 정보 확인',
+  '수수료 안내','테스트 오더 확인','라이브 일자 확인','세일즈포스 결과값 입력',
+];
+const STAGE_SHORT=['준비','테블릿','계약자','계좌','수수료','테스트','라이브','SF입력'];
+
+// 단계 완료조건. n=1..8
+const stageComplete = (t,n) => {
+  const s=t.stages;
+  switch(n){
+    case 1: return !!(s.s1.preCallCheck && s.s1.inspectionDone && (t.openArea==='open'||t.openArea==='unopen'));
+    case 2: return s.s2.tabletArrived==='arrived' && s.s2.internet==='success';
+    case 3: return !!(s.s3.name && s.s3.phone && s.s3.isOwner && s.s3.contractConfirmed);
+    case 4: return !!(s.s4.bank && s.s4.holder && s.s4.branchNo && s.s4.accountNo);
+    case 5: return s.s5.feeGuide==='done';
+    case 6: return !!s.s6.testOrder;
+    case 7: return t.openArea==='open' ? !!s.s7.liveDateWish : (t.openArea==='unopen' ? !!s.s7.smsPlanned : false);
+    case 8: return !!s.s8.sfResult;
+    default: return false;
+  }
+};
+// 현재 단계 = 완료되지 않은 가장 낮은 단계(1~8). 8단계까지 완료면 9 반환(=종료).
+const currentStage = t => { for(let n=1;n<=8;n++) if(!stageComplete(t,n)) return n; return 9; };
+
+// 상태 정합화: 현재단계 enteredAt 채우기 + resolved 전환/복귀. (섹션2/5 규칙)
+const reconcile = t => {
+  const nowISO=new Date().toISOString();
+  const cur=currentStage(t);
+  if(cur<=8){
+    const k='s'+cur;
+    if(!t.stages[k].enteredAt) t.stages[k].enteredAt=nowISO;
+    if(t.status==='resolved'){ t.status='ongoing'; t.resolvedAt=null; } // 되돌림
+  } else {
+    if(t.status!=='resolved'){ t.status='resolved'; t.resolvedAt=nowISO; }
+  }
+  return t;
+};
+
+const blankStages = () => ({
+  s1:{enteredAt:null,preCallCheck:false,inspectionDone:false,openAreaConfirmed:false},
+  s2:{enteredAt:null,tabletArrived:null,internet:null},
+  s3:{enteredAt:null,name:'',phone:'',isOwner:false,contractConfirmed:false},
+  s4:{enteredAt:null,bank:'',holder:'',branchNo:'',accountNo:''},
+  s5:{enteredAt:null,feeGuide:null},
+  s6:{enteredAt:null,testOrder:false},
+  s7:{enteredAt:null,liveDateWish:null,smsPlanned:false},
+  s8:{enteredAt:null,sfResult:'',sfMemo:''},
+});
+
+/* ── Seed data (최초 1회) ─────────────────────────────────────────────── */
+const INIT_ASSIGNEES=[{id:1,name:'김민수'},{id:2,name:'이서연'},{id:3,name:'박지훈'},{id:4,name:'최유나'}];
+const S=(d,extra={})=>({enteredAt:d==null?null:iso(d),...extra});
+const SEED_TASKS=[
+  {id:uid(),storeId:'10231',storeName:'행복국밥',sourcingDate:fmt(dt(13)),assignee:'김민수',openArea:'open',status:'ongoing',createdAt:iso(13),resolvedAt:null,
+   stages:{s1:S(13,{preCallCheck:true,inspectionDone:true,openAreaConfirmed:true}),s2:S(11,{tabletArrived:'arrived',internet:'success'}),s3:S(9,{name:'홍길동',phone:'010-1111-2222',isOwner:true,contractConfirmed:true}),s4:S(4,{bank:'',holder:'',branchNo:'',accountNo:''}),s5:S(null,{feeGuide:null}),s6:S(null,{testOrder:false}),s7:S(null,{liveDateWish:null,smsPlanned:false}),s8:S(null,{sfResult:'',sfMemo:''})}},
+  {id:uid(),storeId:'10888',storeName:'미소분식',sourcingDate:fmt(dt(8)),assignee:'이서연',openArea:'unopen',status:'ongoing',createdAt:iso(8),resolvedAt:null,
+   stages:{s1:S(8,{preCallCheck:true,inspectionDone:true,openAreaConfirmed:true}),s2:S(6,{tabletArrived:'arrived',internet:'success'}),s3:S(2,{name:'김철수',phone:'010-3333-4444',isOwner:false,contractConfirmed:false}),s4:S(null,{bank:'',holder:'',branchNo:'',accountNo:''}),s5:S(null,{feeGuide:null}),s6:S(null,{testOrder:false}),s7:S(null,{liveDateWish:null,smsPlanned:false}),s8:S(null,{sfResult:'',sfMemo:''})}},
+  {id:uid(),storeId:'11045',storeName:'그린샐러드',sourcingDate:fmt(dt(20)),assignee:'박지훈',openArea:'open',status:'ongoing',createdAt:iso(20),resolvedAt:null,
+   stages:{s1:S(20,{preCallCheck:true,inspectionDone:true,openAreaConfirmed:true}),s2:S(18,{tabletArrived:'arrived',internet:'success'}),s3:S(15,{name:'이영희',phone:'010-5555-6666',isOwner:true,contractConfirmed:true}),s4:S(13,{bank:'국민',holder:'이영희',branchNo:'001',accountNo:'123-456'}),s5:S(11,{feeGuide:'done'}),s6:S(6,{testOrder:false}),s7:S(null,{liveDateWish:null,smsPlanned:false}),s8:S(null,{sfResult:'',sfMemo:''})}},
+  {id:uid(),storeId:'11210',storeName:'정성한상',sourcingDate:fmt(dt(3)),assignee:'김민수',openArea:null,status:'ongoing',createdAt:iso(3),resolvedAt:null,
+   stages:{s1:S(3,{preCallCheck:true,inspectionDone:false,openAreaConfirmed:false}),s2:S(null,{tabletArrived:null,internet:null}),s3:S(null,{name:'',phone:'',isOwner:false,contractConfirmed:false}),s4:S(null,{bank:'',holder:'',branchNo:'',accountNo:''}),s5:S(null,{feeGuide:null}),s6:S(null,{testOrder:false}),s7:S(null,{liveDateWish:null,smsPlanned:false}),s8:S(null,{sfResult:'',sfMemo:''})}},
+  {id:uid(),storeId:'11533',storeName:'바삭치킨',sourcingDate:fmt(dt(16)),assignee:'최유나',openArea:'unopen',status:'ongoing',createdAt:iso(16),resolvedAt:null,
+   stages:{s1:S(16,{preCallCheck:true,inspectionDone:true,openAreaConfirmed:true}),s2:S(14,{tabletArrived:'arrived',internet:'success'}),s3:S(12,{name:'박민',phone:'010-7777-8888',isOwner:true,contractConfirmed:true}),s4:S(10,{bank:'신한',holder:'박민',branchNo:'002',accountNo:'234-567'}),s5:S(9,{feeGuide:'done'}),s6:S(7,{testOrder:true}),s7:S(5,{liveDateWish:null,smsPlanned:false}),s8:S(null,{sfResult:'',sfMemo:''})}},
+  {id:uid(),storeId:'11890',storeName:'엄마손김밥',sourcingDate:fmt(dt(6)),assignee:'이서연',openArea:'open',status:'ongoing',createdAt:iso(6),resolvedAt:null,
+   stages:{s1:S(6,{preCallCheck:true,inspectionDone:true,openAreaConfirmed:true}),s2:S(4,{tabletArrived:'arrived',internet:'fail'}),s3:S(null,{name:'',phone:'',isOwner:false,contractConfirmed:false}),s4:S(null,{bank:'',holder:'',branchNo:'',accountNo:''}),s5:S(null,{feeGuide:null}),s6:S(null,{testOrder:false}),s7:S(null,{liveDateWish:null,smsPlanned:false}),s8:S(null,{sfResult:'',sfMemo:''})}},
+  // resolved
+  {id:uid(),storeId:'10044',storeName:'든든밥상',sourcingDate:fmt(dt(34)),assignee:'박지훈',openArea:'open',status:'resolved',createdAt:iso(34),resolvedAt:iso(27),
+   stages:{s1:S(34,{preCallCheck:true,inspectionDone:true,openAreaConfirmed:true}),s2:S(33,{tabletArrived:'arrived',internet:'success'}),s3:S(32,{name:'정우',phone:'010-1212-3434',isOwner:true,contractConfirmed:true}),s4:S(31,{bank:'우리',holder:'정우',branchNo:'003',accountNo:'345-678'}),s5:S(30,{feeGuide:'done'}),s6:S(29,{testOrder:true}),s7:S(28,{liveDateWish:fmt(dt(20)),smsPlanned:false}),s8:S(27,{sfResult:'라이브 확정',sfMemo:'6월 라이브 예정'})}},
+  {id:uid(),storeId:'10077',storeName:'청춘포차',sourcingDate:fmt(dt(40)),assignee:'김민수',openArea:'unopen',status:'resolved',createdAt:iso(40),resolvedAt:iso(28),
+   stages:{s1:S(40,{preCallCheck:true,inspectionDone:true,openAreaConfirmed:true}),s2:S(38,{tabletArrived:'arrived',internet:'success'}),s3:S(36,{name:'한별',phone:'010-9090-1010',isOwner:true,contractConfirmed:true}),s4:S(34,{bank:'하나',holder:'한별',branchNo:'004',accountNo:'456-789'}),s5:S(33,{feeGuide:'done'}),s6:S(31,{testOrder:true}),s7:S(30,{liveDateWish:null,smsPlanned:true}),s8:S(28,{sfResult:'SMS 안내 예정',sfMemo:'오픈일 미정'})}},
+  {id:uid(),storeId:'10099',storeName:'할매순대',sourcingDate:fmt(dt(50)),assignee:'최유나',openArea:'open',status:'resolved',createdAt:iso(50),resolvedAt:iso(45),
+   stages:{s1:S(50,{preCallCheck:true,inspectionDone:true,openAreaConfirmed:true}),s2:S(49,{tabletArrived:'arrived',internet:'success'}),s3:S(48,{name:'서준',phone:'010-2323-4545',isOwner:true,contractConfirmed:true}),s4:S(47,{bank:'국민',holder:'서준',branchNo:'005',accountNo:'567-890'}),s5:S(47,{feeGuide:'done'}),s6:S(46,{testOrder:true}),s7:S(46,{liveDateWish:fmt(dt(40)),smsPlanned:false}),s8:S(45,{sfResult:'라이브 확정',sfMemo:''})}},
+  {id:uid(),storeId:'10120',storeName:'면사랑',sourcingDate:fmt(dt(33)),assignee:'박지훈',openArea:'open',status:'resolved',createdAt:iso(33),resolvedAt:iso(20),
+   stages:{s1:S(33,{preCallCheck:true,inspectionDone:true,openAreaConfirmed:true}),s2:S(31,{tabletArrived:'arrived',internet:'success'}),s3:S(29,{name:'다은',phone:'010-6767-8989',isOwner:true,contractConfirmed:true}),s4:S(26,{bank:'신한',holder:'다은',branchNo:'006',accountNo:'678-901'}),s5:S(25,{feeGuide:'done'}),s6:S(24,{testOrder:true}),s7:S(22,{liveDateWish:fmt(dt(15)),smsPlanned:false}),s8:S(20,{sfResult:'라이브 확정',sfMemo:'프로모션 동반'})}},
+];
+
+/* ── Persistence ─────────────────────────────────────────────────────── */
+const STORAGE='happycall_dashboard_v1';
+const loadState=()=>{ try{const r=localStorage.getItem(STORAGE); if(r){const o=JSON.parse(r); if(o&&o.tasks&&o.assignees)return o;}}catch(e){} return null; };
+const init=loadState()||{tasks:SEED_TASKS,assignees:INIT_ASSIGNEES};
+
+const card={background:'white',borderRadius:16,border:'1px solid #EAEDF4',boxShadow:'0 1px 2px rgba(16,24,40,.04),0 8px 24px -12px rgba(16,24,40,.12)'};
+const ST_DONE={c:'#10B981',bg:'#ECFDF5',label:'완료'},ST_CUR={c:'#F59E0B',bg:'#FFFBEB',label:'진행중'},ST_TODO={c:'#94A3B8',bg:'#F1F5F9',label:'미시작'};
+
+/* ── Small UI atoms ──────────────────────────────────────────────────── */
+const Chk=({checked,onChange,label})=>(
+  <label style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer',padding:'9px 12px',borderRadius:10,border:'1px solid '+(checked?'#A7F3D0':'#F1F5F9'),background:checked?'#ECFDF5':'#FAFBFC'}}>
+    <input type="checkbox" checked={checked} onChange={e=>onChange(e.target.checked)} style={{width:16,height:16,accentColor:'#10B981',cursor:'pointer'}}/>
+    <span style={{fontSize:13,fontWeight:600,color:checked?'#047857':'#475569'}}>{label}</span>
+  </label>
+);
+const Pick=({value,onChange,options})=>(
+  <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+    {options.map(([v,l,c])=>{const on=value===v;return(
+      <button key={String(v)} onClick={()=>onChange(v)} style={{padding:'8px 16px',borderRadius:10,cursor:'pointer',fontSize:13,fontWeight:600,transition:'all .12s',
+        border:'1px solid '+(on?c:'#E2E8F0'),background:on?c:'white',color:on?'white':'#64748B',boxShadow:on?`0 2px 6px -1px ${c}66`:'none'}}>{l}</button>
+    );})}
+  </div>
+);
+const Fld=({label,value,onChange,placeholder,type='text'})=>(
+  <div style={{flex:1,minWidth:0}}>
+    <label style={{display:'block',fontSize:11,fontWeight:700,color:'#64748B',marginBottom:5}}>{label}</label>
+    <input type={type} value={value||''} onChange={e=>onChange(e.target.value)} placeholder={placeholder}
+      style={{width:'100%',border:'1px solid #E2E8F0',borderRadius:9,padding:'9px 11px',fontSize:13,background:'#F8FAFC'}}/>
+  </div>
+);
+const Seg=({value,onChange,options})=>(
+  <div style={{display:'flex',border:'1px solid #E2E8F0',borderRadius:10,overflow:'hidden',background:'white',boxShadow:'0 1px 2px rgba(16,24,40,.04)'}}>
+    {options.map(([v,l])=>(
+      <button key={v} onClick={()=>onChange(v)} style={{padding:'9px 18px',border:'none',cursor:'pointer',fontSize:13,fontWeight:600,transition:'all .15s',
+        background:value===v?'#3B82F6':'transparent',color:value===v?'white':'#64748B'}}>{l}</button>
+    ))}
+  </div>
+);
+
+/* ── Line chart (SVG) ────────────────────────────────────────────────── */
+function LineChart({buckets}){
+  const W=720,H=210,padL=34,padR=14,padT=16,padB=30;
+  const n=buckets.length;
+  const max=Math.max(1,...buckets.flatMap(b=>[b.reg,b.res]));
+  const x=i=> padL+(n<=1?0:i*(W-padL-padR)/(n-1));
+  const y=v=> padT+(1-v/max)*(H-padT-padB);
+  const pts=key=>buckets.map((b,i)=>`${x(i)},${y(b[key])}`).join(' ');
+  const grid=[0,.25,.5,.75,1].map(f=>Math.round(max*f));
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%',height:'auto'}}>
+      {grid.map((g,i)=>{const yy=y(g);return(<g key={i}><line x1={padL} y1={yy} x2={W-padR} y2={yy} stroke="#F1F5F9"/><text x={padL-6} y={yy+3} fontSize="9" fill="#CBD5E1" textAnchor="end">{g}</text></g>);})}
+      <polyline fill="none" stroke="#3B82F6" strokeWidth="2.5" points={pts('reg')}/>
+      <polyline fill="none" stroke="#10B981" strokeWidth="2.5" points={pts('res')}/>
+      {buckets.map((b,i)=>(<g key={i}>
+        <circle cx={x(i)} cy={y(b.reg)} r="3" fill="#3B82F6"/>
+        <circle cx={x(i)} cy={y(b.res)} r="3" fill="#10B981"/>
+        <text x={x(i)} y={H-10} fontSize="9.5" fill="#94A3B8" textAnchor="middle">{b.label}</text>
+      </g>))}
+    </svg>
+  );
+}
+
+/* ── App ─────────────────────────────────────────────────────────────── */
+function App(){
+  useEffect(()=>{ document.getElementById('loading').style.display='none'; },[]);
+
+  const [col,setCol]=useState(false);
+  const [view,setView]=useState('dash');
+  const [tasks,setTasks]=useState(init.tasks);
+  const [assignees,setAssignees]=useState(init.assignees);
+  const [selId,setSelId]=useState(null);
+  const [modal,setModal]=useState(false);
+  const [confirm,setConfirm]=useState(null);   // {msg,onYes}
+  const [toast,setToast]=useState('');
+
+  useEffect(()=>{ try{localStorage.setItem(STORAGE,JSON.stringify({tasks,assignees}));}catch(e){} },[tasks,assignees]);
+
+  const liveTask = selId ? tasks.find(t=>t.id===selId) : null;
+  useEffect(()=>{ if(selId&&!liveTask) setSelId(null); },[selId,liveTask]);
+
+  const showToast=m=>{ setToast(m); setTimeout(()=>setToast(''),2200); };
+
+  /* mutations */
+  const patchTask=(id,fn)=>setTasks(ts=>ts.map(t=>t.id===id?reconcile(fn(structuredClone(t))):t));
+  const setStage=(id,key,patch)=>patchTask(id,t=>{Object.assign(t.stages[key],patch);return t;});
+  const setRoot =(id,patch)=>patchTask(id,t=>{Object.assign(t,patch);return t;});
+  const delTask =id=>{ setTasks(ts=>ts.filter(t=>t.id!==id)); if(selId===id)setSelId(null); };
+
+  const addAssignee=n=>{ if(!n.trim())return; setAssignees(v=>[...v,{id:Date.now(),name:n.trim()}]); };
+  const updAssignee=(id,n)=>{ if(!n.trim())return; setAssignees(v=>v.map(a=>a.id===id?{...a,name:n.trim()}:a)); };
+  const delAssignee=a=>{
+    const cnt=tasks.filter(t=>t.assignee===a.name).length;
+    const go=()=>setAssignees(v=>v.filter(x=>x.id!==a.id));
+    if(cnt) setConfirm({msg:`'${a.name}' 담당자는 ${cnt}건의 task에 배정되어 있습니다. 그래도 삭제하시겠습니까? (task는 유지됩니다)`,onYes:go});
+    else go();
+  };
+
+  /* export / import */
+  const exportJSON=()=>{
+    const blob=new Blob([JSON.stringify({tasks,assignees},null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=`happycall-backup-${fmt(today)}.json`; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url); showToast('JSON 백업을 내보냈습니다');
+  };
+  const importRef=useRef(null);
+  const importJSON=e=>{
+    const f=e.target.files[0]; if(!f)return;
+    const r=new FileReader();
+    r.onload=()=>{ try{const o=JSON.parse(r.result); if(!o.tasks||!o.assignees)throw 0;
+      setConfirm({msg:'현재 데이터를 가져온 파일로 덮어씁니다. 계속하시겠습니까?',onYes:()=>{setTasks(o.tasks);setAssignees(o.assignees);showToast('데이터를 가져왔습니다');}}); }
+      catch(err){ showToast('올바른 백업 파일이 아닙니다'); } };
+    r.readAsText(f); e.target.value='';
+  };
+  const resetAll=()=>setConfirm({msg:'모든 데이터를 초기화합니다. 되돌릴 수 없습니다. 계속하시겠습니까?',onYes:()=>{setTasks([]);showToast('초기화되었습니다');}});
+
+  const ongoing = useMemo(()=>tasks.filter(t=>t.status==='ongoing'),[tasks]);
+  const resolved= useMemo(()=>tasks.filter(t=>t.status==='resolved'),[tasks]);
+
+  /* ── analytics ── */
+  const analytics=useMemo(()=>{
+    const stageCounts=[0,0,0,0,0,0,0,0];
+    ongoing.forEach(t=>{const c=currentStage(t); if(c>=1&&c<=8)stageCounts[c-1]++;});
+    const compl=Array.from({length:8},()=>[]);
+    const ong=Array.from({length:8},()=>[]);
+    const reached=[0,0,0,0,0,0,0,0];
+    const now=Date.now();
+    tasks.forEach(t=>{
+      const cur=currentStage(t);
+      for(let n=1;n<=8;n++){
+        if(stageComplete(t,n)) reached[n-1]++;
+        const e=t.stages['s'+n].enteredAt; if(!e)continue;
+        if(stageComplete(t,n)){
+          const exit = n<8 ? t.stages['s'+(n+1)].enteredAt : t.resolvedAt;
+          if(exit) compl[n-1].push((new Date(exit)-new Date(e))/86400000);
+        } else if(n===cur && t.status==='ongoing'){
+          ong[n-1].push((now-new Date(e))/86400000);
+        }
+      }
+    });
+    const avg=arr=>arr.length?round1(arr.reduce((s,x)=>s+x,0)/arr.length):null;
+    const stageDwell=stageCounts.map((_,i)=>({completed:avg(compl[i]),ongoing:avg(ong[i]),cCount:compl[i].length,oCount:ong[i].length}));
+    const leads=resolved.map(t=>({t,lead:(new Date(t.resolvedAt)-new Date(t.createdAt))/86400000}));
+    const leadVals=leads.map(l=>l.lead);
+    const avgLead=leadVals.length?round1(leadVals.reduce((s,x)=>s+x,0)/leadVals.length):null;
+    const minLead=leadVals.length?round1(Math.min(...leadVals)):null;
+    const maxLead=leadVals.length?round1(Math.max(...leadVals)):null;
+    const ongElapsed=ongoing.map(t=>(now-new Date(t.createdAt))/86400000);
+    const avgOngElapsed=ongElapsed.length?round1(ongElapsed.reduce((s,x)=>s+x,0)/ongElapsed.length):null;
+    return {stageCounts,stageDwell,reached,leads,avgLead,minLead,maxLead,avgOngElapsed,total:tasks.length};
+  },[tasks,ongoing,resolved]);
+
+  /* lead time per assignee */
+  const [leadDrill,setLeadDrill]=useState(false);
+  const [leadSort,setLeadSort]=useState('desc');
+  const [leadExpand,setLeadExpand]=useState(null);
+  const leadByAssignee=useMemo(()=>{
+    const rows=assignees.map(a=>{
+      const items=analytics.leads.filter(l=>l.t.assignee===a.name);
+      const vals=items.map(l=>l.lead);
+      const avg=vals.length?round1(vals.reduce((s,x)=>s+x,0)/vals.length):null;
+      return {name:a.name,count:vals.length,avg,min:vals.length?round1(Math.min(...vals)):null,max:vals.length?round1(Math.max(...vals)):null,items};
+    });
+    const withData=rows.filter(r=>r.count>0).sort((a,b)=>leadSort==='desc'?b.avg-a.avg:a.avg-b.avg);
+    const noData=rows.filter(r=>r.count===0);
+    return [...withData,...noData];
+  },[assignees,analytics.leads,leadSort]);
+
+  /* trend */
+  const [trendMode,setTrendMode]=useState('week');
+  const trend=useMemo(()=>{
+    const buckets=[];
+    if(trendMode==='week'){
+      for(let i=7;i>=0;i--){const mon=getMonday(today,-i); buckets.push({s:fmt(mon),e:fmt(addDays(mon,6)),label:mon.toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'}),reg:0,res:0});}
+      tasks.forEach(t=>{ buckets.forEach(b=>{ if(t.sourcingDate>=b.s&&t.sourcingDate<=b.e)b.reg++; if(t.resolvedAt){const d=fmt(new Date(t.resolvedAt)); if(d>=b.s&&d<=b.e)b.res++;} }); });
+    } else {
+      for(let i=5;i>=0;i--){const d=new Date(today.getFullYear(),today.getMonth()-i,1); const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; buckets.push({key,label:`${d.getMonth()+1}월`,reg:0,res:0});}
+      tasks.forEach(t=>{ buckets.forEach(b=>{ if((t.sourcingDate||'').startsWith(b.key))b.reg++; if(t.resolvedAt&&fmt(new Date(t.resolvedAt)).startsWith(b.key))b.res++; }); });
+    }
+    return buckets;
+  },[tasks,trendMode]);
+
+  /* stage drilldown */
+  const [stageDrill,setStageDrill]=useState(null);
+
+  /* ongoing filters */
+  const [fA,setFA]=useState('');
+  const [q,setQ]=useState('');
+  const [sortKey,setSortKey]=useState('dwell');
+  const now=Date.now();
+  const ongoingRows=useMemo(()=>{
+    let rows=ongoing.filter(t=>(!fA||t.assignee===fA)&&(!q||t.storeName.includes(q)||(t.storeId||'').includes(q)));
+    rows=rows.map(t=>{const cur=currentStage(t); const e=t.stages['s'+cur]?.enteredAt; return {t,cur,elapsed:daysBetween(fmt(today),t.sourcingDate),dwell:e?Math.round((now-new Date(e))/86400000):0};});
+    const dir=-1;
+    rows.sort((a,b)=>{ if(sortKey==='dwell')return (a.dwell-b.dwell)*dir; if(sortKey==='elapsed')return (a.elapsed-b.elapsed)*dir; return (a.t.sourcingDate<b.t.sourcingDate?-1:1)*dir; });
+    return rows;
+  },[ongoing,fA,q,sortKey,now]);
+
+  /* resolved grouped by sourcing month */
+  const resolvedGroups=useMemo(()=>{
+    const map={};
+    resolved.forEach(t=>{const ym=(t.sourcingDate||'').slice(0,7)||'기타'; (map[ym]=map[ym]||[]).push(t);});
+    return Object.keys(map).sort((a,b)=>a<b?1:-1).map(ym=>{
+      const items=map[ym].sort((a,b)=>a.sourcingDate<b.sourcingDate?1:-1);
+      const leads=items.map(t=>(new Date(t.resolvedAt)-new Date(t.createdAt))/86400000);
+      return {ym,items,avg:leads.length?round1(leads.reduce((s,x)=>s+x,0)/leads.length):null};
+    });
+  },[resolved]);
+
+  const NAV=[{id:'dash',Icon:IcTrend,label:'Dashboard'},{id:'ongoing',Icon:IcList,label:'Ongoing'},{id:'resolved',Icon:IcArchive,label:'Resolved'},{id:'setting',Icon:IcGear,label:'Setting'}];
+  const TITLE={dash:'Dashboard',ongoing:'Ongoing',resolved:'Resolved',setting:'Setting'};
+
+  return (
+    <div style={{display:'flex',height:'100vh',background:'#EEF1F8',overflow:'hidden'}}>
+
+      {/* ── Sidebar ── */}
+      <aside style={{width:col?64:224,background:'linear-gradient(180deg,#111A2E 0%,#0C1322 100%)',display:'flex',flexDirection:'column',flexShrink:0,transition:'width .2s',zIndex:10,boxShadow:'4px 0 24px -12px rgba(16,24,40,.45)'}}>
+        <div style={{height:56,display:'flex',alignItems:'center',justifyContent:col?'center':'space-between',padding:'0 14px',borderBottom:'1px solid rgba(255,255,255,.08)'}}>
+          {!col&&<span style={{fontWeight:800,fontSize:14,letterSpacing:.5,color:'#60A5FA'}}>해피콜 워크플로우</span>}
+          <button className="nbtn" onClick={()=>setCol(v=>!v)} style={{padding:6,borderRadius:8,background:'transparent',border:'none',color:'#64748B',display:'flex'}}>{col?<IcChevR size={16}/>:<IcChevL size={16}/>}</button>
+        </div>
+        <nav style={{flex:1,padding:'10px 0'}}>
+          {NAV.map(({id,Icon,label})=>(
+            <button key={id} onClick={()=>setView(id)} style={{width:'100%',display:'flex',alignItems:'center',gap:13,padding:col?'13px 0':'12px 16px',justifyContent:col?'center':'flex-start',
+              background:view===id?'rgba(59,130,246,.15)':'transparent',borderLeft:`3px solid ${view===id?'#3B82F6':'transparent'}`,border:'none',color:view===id?'#93C5FD':'#7C8AA5',cursor:'pointer',fontSize:14,fontWeight:view===id?600:500,transition:'all .15s'}}>
+              <Icon size={18}/>{!col&&<span>{label}</span>}
+            </button>
+          ))}
+        </nav>
+        {!col&&(
+          <div style={{padding:14,borderTop:'1px solid rgba(255,255,255,.08)'}}>
+            <div style={{display:'flex',alignItems:'flex-start',gap:8,padding:'10px 11px',borderRadius:10,background:'rgba(245,158,11,.12)',border:'1px solid rgba(245,158,11,.25)'}}>
+              <IcAlert size={15} style={{color:'#FBBF24',flexShrink:0,marginTop:1}}/>
+              <span style={{fontSize:10.5,lineHeight:1.5,color:'#FCD34D'}}>데이터는 이 브라우저에만 저장됩니다. Setting에서 정기적으로 JSON 백업하세요.</span>
+            </div>
+          </div>
+        )}
+      </aside>
+
+      <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
+        {/* ── Header ── */}
+        <header style={{height:62,background:'white',borderBottom:'1px solid #EAEDF4',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 24px',flexShrink:0,boxShadow:'0 1px 3px rgba(16,24,40,.05)'}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,fontSize:14,color:'#94A3B8'}}>
+            <IcHome size={15}/><span style={{color:'#CBD5E1'}}>/</span>
+            <span style={{fontWeight:700,color:'#1E293B',fontSize:15}}>{TITLE[view]}</span>
+          </div>
+          <button onClick={()=>setModal(true)} style={{display:'flex',alignItems:'center',gap:7,background:'#3B82F6',color:'white',border:'none',borderRadius:10,padding:'10px 18px',fontSize:14,fontWeight:600,cursor:'pointer',boxShadow:'0 4px 12px -2px rgba(59,130,246,.45)'}}><IcPlus size={16}/>새 Task 등록</button>
+        </header>
+
+        {/* ── Main ── */}
+        <main style={{flex:1,overflow:'auto',padding:18}}>
+
+          {view==='dash' && (
+            <div style={{display:'flex',flexDirection:'column',gap:18}}>
+              {/* KPI */}
+              {(()=>{
+                const total=tasks.length, on=ongoing.length, re=resolved.length;
+                const rate=total?Math.round(re/total*100):0;
+                const items=[
+                  {label:'전체 Task',value:total,unit:'건',color:'#6366F1',bg:'#EEF2FF',pct:100},
+                  {label:'진행중',value:on,unit:'건',color:'#3B82F6',bg:'#EFF6FF',pct:total?Math.round(on/total*100):0},
+                  {label:'완료',value:re,unit:'건',color:'#10B981',bg:'#ECFDF5',pct:total?Math.round(re/total*100):0},
+                  {label:'완료율',value:rate,unit:'%',color:'#F59E0B',bg:'#FFFBEB',pct:rate},
+                ];
+                return (
+                  <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:16}}>
+                    {items.map(({label,value,unit,color,bg,pct})=>(
+                      <div key={label} style={{...card,padding:'20px 22px',display:'flex',flexDirection:'column',gap:11}}>
+                        <span style={{fontSize:13,fontWeight:600,color:'#94A3B8'}}>{label}</span>
+                        <div style={{display:'flex',alignItems:'flex-end',gap:5}}><span style={{fontSize:36,fontWeight:800,color,lineHeight:1,letterSpacing:-1}}>{value}</span><span style={{fontSize:13,fontWeight:600,color:'#94A3B8',paddingBottom:4}}>{unit}</span></div>
+                        <div style={{height:6,borderRadius:3,background:bg,overflow:'hidden'}}><div style={{height:'100%',background:`linear-gradient(90deg,${color}cc,${color})`,borderRadius:3,width:`${pct}%`,transition:'width .6s'}}/></div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+
+              {/* Lead time card (클릭 → 담당자별 드릴다운) */}
+              <div style={{...card,padding:0,overflow:'hidden'}}>
+                <div onClick={()=>setLeadDrill(v=>!v)} className="row-item" style={{padding:'20px 24px',display:'flex',alignItems:'center',gap:24,cursor:'pointer',flexWrap:'wrap'}}>
+                  <div style={{display:'flex',flexDirection:'column',gap:6,minWidth:190}}>
+                    <span style={{display:'flex',alignItems:'center',gap:7,fontSize:13,fontWeight:700,color:'#1E293B'}}><IcClock size={16} style={{color:'#F59E0B'}}/>전체 평균 리드타임</span>
+                    <span style={{fontSize:11,color:'#94A3B8'}}>완료된 task의 등록→완료 평균 소요</span>
+                  </div>
+                  <div style={{display:'flex',alignItems:'flex-end',gap:5}}><span style={{fontSize:38,fontWeight:800,color:'#F59E0B',lineHeight:1,letterSpacing:-1}}>{analytics.avgLead??'–'}</span><span style={{fontSize:14,fontWeight:600,color:'#94A3B8',paddingBottom:5}}>일</span></div>
+                  <div style={{display:'flex',gap:22,marginLeft:8,flexWrap:'wrap'}}>
+                    {[['완료 건수',analytics.leads.length+'건','#10B981'],['최단',(analytics.minLead??'–')+'일','#3B82F6'],['최장',(analytics.maxLead??'–')+'일','#EF4444'],['진행중 평균경과',(analytics.avgOngElapsed??'–')+'일','#64748B']].map(([l,v,c])=>(
+                      <div key={l} style={{display:'flex',flexDirection:'column',gap:3}}><span style={{fontSize:11,color:'#94A3B8'}}>{l}</span><span style={{fontSize:16,fontWeight:700,color:c}}>{v}</span></div>
+                    ))}
+                  </div>
+                  <span style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:5,fontSize:12,fontWeight:600,color:'#3B82F6'}}>담당자별 보기<IcChevD size={14} style={{transform:leadDrill?'rotate(180deg)':'none',transition:'transform .2s'}}/></span>
+                </div>
+                {leadDrill&&(
+                  <div style={{borderTop:'1px solid #F1F5F9'}}>
+                    <div style={{display:'grid',gridTemplateColumns:'1.4fr 90px 110px 90px 90px 110px 40px',background:'#F8FAFC',borderBottom:'2px solid #E2E8F0',padding:'10px 22px',alignItems:'center'}}>
+                      {['담당자','완료 건수','평균 리드타임','최단','최장','전체대비',''].map((h,i)=>(
+                        <span key={i} onClick={()=>i===2&&setLeadSort(s=>s==='desc'?'asc':'desc')} style={{fontSize:11,fontWeight:700,color:i===2?'#3B82F6':'#64748B',cursor:i===2?'pointer':'default'}}>{h}{i===2&&(leadSort==='desc'?' ▼':' ▲')}</span>
+                      ))}
+                    </div>
+                    {leadByAssignee.map(r=>(
+                      <React.Fragment key={r.name}>
+                        <div onClick={()=>r.count&&setLeadExpand(v=>v===r.name?null:r.name)} className="row-item" style={{display:'grid',gridTemplateColumns:'1.4fr 90px 110px 90px 90px 110px 40px',padding:'11px 22px',borderBottom:'1px solid #F1F5F9',alignItems:'center',cursor:r.count?'pointer':'default'}}>
+                          <span style={{fontSize:14,fontWeight:600,color:'#334155'}}>{r.name}</span>
+                          {r.count===0
+                            ? <span style={{gridColumn:'2 / 8',fontSize:12,color:'#CBD5E1'}}>데이터 없음</span>
+                            : <>
+                                <span style={{fontSize:13,color:'#334155'}}>{r.count}건</span>
+                                <span style={{fontSize:15,fontWeight:800,color:'#F59E0B'}}>{r.avg}일</span>
+                                <span style={{fontSize:13,color:'#3B82F6'}}>{r.min}일</span>
+                                <span style={{fontSize:13,color:'#EF4444'}}>{r.max}일</span>
+                                {(()=>{const d=analytics.avgLead!=null?round1(r.avg-analytics.avgLead):0; const slow=d>0; return <span style={{fontSize:13,fontWeight:700,color:d===0?'#94A3B8':slow?'#EF4444':'#10B981'}}>{d>0?'+':''}{d}일</span>;})()}
+                                <IcChevD size={14} style={{color:'#CBD5E1',transform:leadExpand===r.name?'rotate(180deg)':'none',transition:'transform .2s'}}/>
+                              </>}
+                        </div>
+                        {leadExpand===r.name&&r.items.map(l=>(
+                          <div key={l.t.id} style={{display:'grid',gridTemplateColumns:'1.4fr 1fr 1fr 1fr',padding:'8px 22px 8px 40px',borderBottom:'1px solid #F8FAFC',background:'#FBFCFE',alignItems:'center'}}>
+                            <span style={{fontSize:12,color:'#475569',fontWeight:600}}>{l.t.storeName} <span style={{color:'#CBD5E1',fontWeight:400}}>#{l.t.storeId}</span></span>
+                            <span style={{fontSize:11,color:'#94A3B8'}}>소싱 {l.t.sourcingDate}</span>
+                            <span style={{fontSize:11,color:'#94A3B8'}}>완료 {fmt(new Date(l.t.resolvedAt))}</span>
+                            <span style={{fontSize:12,fontWeight:700,color:'#F59E0B'}}>{round1(l.lead)}일</span>
+                          </div>
+                        ))}
+                      </React.Fragment>
+                    ))}
+                    {leadByAssignee.length===0&&<div style={{padding:'24px',textAlign:'center',color:'#CBD5E1',fontSize:13}}>완료된 task가 없습니다</div>}
+                  </div>
+                )}
+              </div>
+
+              {/* 단계별 갯수 현황 */}
+              <div style={{...card,padding:'20px 24px'}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:18,flexWrap:'wrap'}}><IcList size={17} style={{color:'#3B82F6'}}/><span style={{fontSize:15,fontWeight:700,color:'#1E293B'}}>단계별 현황 (현재 머문 task 수)</span><span style={{fontSize:12,color:'#94A3B8'}}>· 막대를 클릭하면 해당 단계 목록</span></div>
+                <div style={{display:'flex',alignItems:'flex-end',gap:10,height:180}}>
+                  {analytics.stageCounts.map((c,i)=>{
+                    const max=Math.max(1,...analytics.stageCounts);
+                    const h=c?Math.max(8,c/max*130):3;
+                    const active=stageDrill===i+1;
+                    return (
+                      <div key={i} onClick={()=>setStageDrill(active?null:i+1)} className="bar" style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:8,justifyContent:'flex-end'}}>
+                        <span style={{fontSize:15,fontWeight:800,color:c?'#3B82F6':'#CBD5E1'}}>{c}</span>
+                        <div style={{width:'100%',height:h,borderRadius:'7px 7px 0 0',background:active?'linear-gradient(180deg,#1D4ED8,#3B82F6)':c?'linear-gradient(180deg,#60A5FA,#3B82F6)':'#E2E8F0',boxShadow:active?'0 0 0 2px #BFDBFE':'none'}}/>
+                        <span style={{fontSize:11,fontWeight:600,color:active?'#3B82F6':'#64748B',textAlign:'center',lineHeight:1.2}}>{i+1}.{STAGE_SHORT[i]}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                {stageDrill&&(
+                  <div style={{marginTop:16,borderTop:'1px solid #F1F5F9',paddingTop:12}}>
+                    <div style={{fontSize:13,fontWeight:700,color:'#1E293B',marginBottom:8}}>{stageDrill}단계 · {STAGE_TITLES[stageDrill-1]} 에 머문 task</div>
+                    {ongoing.filter(t=>currentStage(t)===stageDrill).map(t=>{
+                      const e=t.stages['s'+stageDrill].enteredAt;
+                      return (
+                        <div key={t.id} onClick={()=>{setView('ongoing');setSelId(t.id);}} className="row-item" style={{display:'flex',alignItems:'center',gap:14,padding:'9px 12px',borderRadius:9,cursor:'pointer',flexWrap:'wrap'}}>
+                          <span style={{fontSize:13,fontWeight:700,color:'#334155',minWidth:140}}>{t.storeName} <span style={{color:'#CBD5E1',fontWeight:400}}>#{t.storeId}</span></span>
+                          <span style={{fontSize:12,color:'#64748B',minWidth:80}}>{t.assignee}</span>
+                          <span style={{fontSize:12,color:'#94A3B8'}}>소싱 {t.sourcingDate}</span>
+                          <span style={{marginLeft:'auto',fontSize:12,fontWeight:700,color:'#F59E0B'}}>체류 {e?Math.round((now-new Date(e))/86400000):0}일</span>
+                        </div>
+                      );
+                    })}
+                    {ongoing.filter(t=>currentStage(t)===stageDrill).length===0&&<div style={{padding:'8px 12px',color:'#CBD5E1',fontSize:12}}>해당 단계 task 없음</div>}
+                  </div>
+                )}
+              </div>
+
+              {/* 단계별 평균 체류일 + 퍼널 */}
+              <div style={{display:'grid',gridTemplateColumns:'1.3fr 1fr',gap:18}}>
+                <div style={{...card,padding:'20px 24px'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16}}><IcClock size={17} style={{color:'#F59E0B'}}/><span style={{fontSize:15,fontWeight:700,color:'#1E293B'}}>단계별 평균 체류일 (병목 진단)</span></div>
+                  <div style={{display:'flex',gap:14,marginBottom:12,fontSize:11,color:'#64748B'}}>
+                    <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{width:10,height:10,borderRadius:3,background:'#10B981'}}/>완료 단계 평균</span>
+                    <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{width:10,height:10,borderRadius:3,background:'#F59E0B'}}/>진행중(현재 단계) 평균</span>
+                  </div>
+                  {analytics.stageDwell.map((d,i)=>{
+                    const maxV=Math.max(1,...analytics.stageDwell.flatMap(x=>[x.completed||0,x.ongoing||0]));
+                    return (
+                      <div key={i} style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
+                        <span style={{fontSize:12,fontWeight:600,color:'#64748B',width:78,flexShrink:0}}>{i+1}.{STAGE_SHORT[i]}</span>
+                        <div style={{flex:1,display:'flex',flexDirection:'column',gap:3}}>
+                          <div style={{display:'flex',alignItems:'center',gap:6}}><div style={{height:9,borderRadius:5,background:'#10B981',width:`${(d.completed||0)/maxV*100}%`,minWidth:d.completed?3:0}}/><span style={{fontSize:11,color:'#10B981',fontWeight:700}}>{d.completed!=null?d.completed+'일':'–'}{d.cCount?` (${d.cCount})`:''}</span></div>
+                          <div style={{display:'flex',alignItems:'center',gap:6}}><div style={{height:9,borderRadius:5,background:'#F59E0B',width:`${(d.ongoing||0)/maxV*100}%`,minWidth:d.ongoing?3:0}}/><span style={{fontSize:11,color:'#F59E0B',fontWeight:700}}>{d.ongoing!=null?d.ongoing+'일':'–'}{d.oCount?` (${d.oCount})`:''}</span></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div style={{...card,padding:'20px 24px'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16}}><IcFunnel size={16} style={{color:'#8B5CF6'}}/><span style={{fontSize:15,fontWeight:700,color:'#1E293B'}}>퍼널 (단계 통과율)</span></div>
+                  {analytics.reached.map((c,i)=>{
+                    const pct=analytics.total?Math.round(c/analytics.total*100):0;
+                    return (
+                      <div key={i} style={{marginBottom:9}}>
+                        <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}><span style={{fontSize:12,fontWeight:600,color:'#64748B'}}>{i+1}.{STAGE_SHORT[i]} 완료</span><span style={{fontSize:12,fontWeight:700,color:'#8B5CF6'}}>{c}건 · {pct}%</span></div>
+                        <div style={{height:8,borderRadius:4,background:'#F1F5F9',overflow:'hidden'}}><div style={{height:'100%',background:'linear-gradient(90deg,#A78BFA,#8B5CF6)',borderRadius:4,width:`${pct}%`,transition:'width .5s'}}/></div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 담당자별 + 트렌드 */}
+              <div style={{...card,padding:0,overflow:'hidden'}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,padding:'18px 24px 14px'}}><IcUsers size={17} style={{color:'#3B82F6'}}/><span style={{fontSize:15,fontWeight:700,color:'#1E293B'}}>담당자별 현황</span></div>
+                <div style={{display:'grid',gridTemplateColumns:'1.5fr 1fr 1fr 1fr',background:'#F8FAFC',borderTop:'1px solid #EAEDF4',borderBottom:'2px solid #E2E8F0',padding:'10px 24px'}}>
+                  {['담당자','진행중','완료','합계'].map(h=><span key={h} style={{fontSize:11,fontWeight:700,color:'#64748B'}}>{h}</span>)}
+                </div>
+                {assignees.map(a=>{
+                  const on=ongoing.filter(t=>t.assignee===a.name).length;
+                  const re=resolved.filter(t=>t.assignee===a.name).length;
+                  return (
+                    <div key={a.id} className="row-item" style={{display:'grid',gridTemplateColumns:'1.5fr 1fr 1fr 1fr',padding:'11px 24px',borderBottom:'1px solid #F1F5F9',alignItems:'center'}}>
+                      <span style={{fontSize:14,fontWeight:600,color:'#334155'}}>{a.name}</span>
+                      <span style={{fontSize:14,fontWeight:700,color:on?'#3B82F6':'#CBD5E1'}}>{on}</span>
+                      <span style={{fontSize:14,fontWeight:700,color:re?'#10B981':'#CBD5E1'}}>{re}</span>
+                      <span style={{fontSize:14,fontWeight:800,color:'#1E293B'}}>{on+re}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div style={{...card,padding:'20px 24px'}}>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16,flexWrap:'wrap',gap:10}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8}}><IcTrend size={17} style={{color:'#10B981'}}/><span style={{fontSize:15,fontWeight:700,color:'#1E293B'}}>등록 · 완료 추이</span></div>
+                  <Seg value={trendMode} onChange={setTrendMode} options={[['week','주간'],['month','월간']]}/>
+                </div>
+                <div style={{display:'flex',gap:18,marginBottom:8,fontSize:12,color:'#64748B'}}>
+                  <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:14,height:3,borderRadius:2,background:'#3B82F6'}}/>등록(소싱일)</span>
+                  <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:14,height:3,borderRadius:2,background:'#10B981'}}/>완료</span>
+                </div>
+                <LineChart buckets={trend}/>
+              </div>
+            </div>
+          )}
+
+          {view==='ongoing' && (
+            <div style={{display:'flex',flexDirection:'column',gap:14}}>
+              <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,background:'white',border:'1px solid #E2E8F0',borderRadius:10,padding:'9px 13px',boxShadow:'0 1px 2px rgba(16,24,40,.04)'}}>
+                  <IcSearch size={15} style={{color:'#94A3B8'}}/>
+                  <input value={q} onChange={e=>setQ(e.target.value)} placeholder="상호 / 스토어ID 검색" style={{border:'none',outline:'none',fontSize:13,width:180,background:'none'}}/>
+                </div>
+                <select value={fA} onChange={e=>setFA(e.target.value)} className="selbtn" style={{fontSize:13,fontWeight:500,border:'1px solid #E2E8F0',borderRadius:10,padding:'10px 16px',color:'#475569',cursor:'pointer',background:'white'}}>
+                  <option value="">전체 담당자</option>{assignees.map(a=><option key={a.id}>{a.name}</option>)}
+                </select>
+                <select value={sortKey} onChange={e=>setSortKey(e.target.value)} className="selbtn" style={{fontSize:13,fontWeight:500,border:'1px solid #E2E8F0',borderRadius:10,padding:'10px 16px',color:'#475569',cursor:'pointer',background:'white'}}>
+                  <option value="dwell">현재단계 체류일 ↓</option><option value="elapsed">경과일 ↓</option><option value="sourcing">소싱일 ↓</option>
+                </select>
+                <span style={{fontSize:14,color:'#94A3B8',marginLeft:'auto'}}><b style={{color:'#334155'}}>{ongoingRows.length}</b>건</span>
+              </div>
+              <div style={{...card,overflow:'hidden'}}>
+                <div style={{display:'grid',gridTemplateColumns:'1.4fr 90px 100px 110px 1.1fr 90px 110px',background:'#F8FAFC',borderBottom:'2px solid #E2E8F0',padding:'12px 18px'}}>
+                  {['상호','스토어ID','담당자','소싱일','현재 단계','경과일','현재단계 체류일'].map(h=><span key={h} style={{fontSize:11,fontWeight:700,color:'#64748B'}}>{h}</span>)}
+                </div>
+                {ongoingRows.length===0
+                  ? <div style={{padding:'48px',textAlign:'center',color:'#CBD5E1',fontSize:13}}>진행중인 task가 없습니다</div>
+                  : ongoingRows.map(({t,cur,elapsed,dwell})=>(
+                    <div key={t.id} onClick={()=>setSelId(t.id)} className="row-item" style={{display:'grid',gridTemplateColumns:'1.4fr 90px 100px 110px 1.1fr 90px 110px',padding:'12px 18px',borderBottom:'1px solid #F1F5F9',alignItems:'center',cursor:'pointer',background:selId===t.id?'#EFF6FF':'white'}}>
+                      <span style={{fontSize:14,fontWeight:700,color:'#1E293B'}}>{t.storeName}</span>
+                      <span style={{fontSize:13,color:'#64748B'}}>{t.storeId}</span>
+                      <span style={{fontSize:13,color:'#334155'}}>{t.assignee}</span>
+                      <span style={{fontSize:12,color:'#94A3B8'}}>{t.sourcingDate}</span>
+                      <span><span style={{fontSize:11,fontWeight:700,padding:'3px 9px',borderRadius:999,background:'#FFFBEB',color:'#D97706'}}>{cur}. {STAGE_SHORT[cur-1]}</span></span>
+                      <span style={{fontSize:13,fontWeight:600,color:'#64748B'}}>{elapsed}일</span>
+                      <span style={{fontSize:14,fontWeight:800,color:dwell>=7?'#EF4444':dwell>=4?'#F59E0B':'#3B82F6'}}>{dwell}일</span>
+                    </div>
+                  ))
+                }
+              </div>
+            </div>
+          )}
+
+          {view==='resolved' && (
+            <div style={{display:'flex',flexDirection:'column',gap:18}}>
+              {resolvedGroups.length===0&&<div style={{...card,padding:'48px',textAlign:'center',color:'#CBD5E1',fontSize:13}}>완료된 task가 없습니다</div>}
+              {resolvedGroups.map(g=>(
+                <div key={g.ym} style={{...card,overflow:'hidden'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:12,padding:'14px 22px',borderBottom:'1px solid #F1F5F9',background:'#FBFCFE',flexWrap:'wrap'}}>
+                    <span style={{fontSize:15,fontWeight:800,color:'#1E293B'}}>{g.ym}</span>
+                    <span style={{fontSize:12,fontWeight:600,color:'#10B981',background:'#ECFDF5',borderRadius:999,padding:'3px 10px'}}>{g.items.length}건 완료</span>
+                    {g.avg!=null&&<span style={{fontSize:12,color:'#94A3B8'}}>평균 리드타임 <b style={{color:'#F59E0B'}}>{g.avg}일</b></span>}
+                  </div>
+                  <div style={{display:'grid',gridTemplateColumns:'1.4fr 90px 100px 110px 110px 90px',background:'#F8FAFC',borderBottom:'1px solid #E2E8F0',padding:'10px 22px'}}>
+                    {['상호','스토어ID','담당자','소싱일','완료일','리드타임'].map(h=><span key={h} style={{fontSize:11,fontWeight:700,color:'#64748B'}}>{h}</span>)}
+                  </div>
+                  {g.items.map(t=>{
+                    const lead=round1((new Date(t.resolvedAt)-new Date(t.createdAt))/86400000);
+                    return (
+                      <div key={t.id} onClick={()=>setSelId(t.id)} className="row-item" style={{display:'grid',gridTemplateColumns:'1.4fr 90px 100px 110px 110px 90px',padding:'11px 22px',borderBottom:'1px solid #F1F5F9',alignItems:'center',cursor:'pointer',background:selId===t.id?'#EFF6FF':'white'}}>
+                        <span style={{fontSize:14,fontWeight:700,color:'#1E293B'}}>{t.storeName}</span>
+                        <span style={{fontSize:13,color:'#64748B'}}>{t.storeId}</span>
+                        <span style={{fontSize:13,color:'#334155'}}>{t.assignee}</span>
+                        <span style={{fontSize:12,color:'#94A3B8'}}>{t.sourcingDate}</span>
+                        <span style={{fontSize:12,color:'#94A3B8'}}>{fmt(new Date(t.resolvedAt))}</span>
+                        <span style={{fontSize:14,fontWeight:800,color:'#F59E0B'}}>{lead}일</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {view==='setting' && (
+            <div style={{maxWidth:760,display:'flex',flexDirection:'column',gap:18}}>
+              <div style={{...card,padding:'14px 18px',display:'flex',alignItems:'flex-start',gap:10,background:'#FFFBEB',border:'1px solid #FDE68A'}}>
+                <IcAlert size={17} style={{color:'#D97706',flexShrink:0,marginTop:1}}/>
+                <span style={{fontSize:12.5,lineHeight:1.6,color:'#92400E'}}>데이터는 이 브라우저·PC의 localStorage에만 저장됩니다. 다른 PC 이관이나 백업을 위해서는 <b>JSON Export</b>가 유일한 방법이니 정기적으로 내보내 두세요.</span>
+              </div>
+
+              {/* 담당자 관리 */}
+              <div style={{...card,padding:24}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,fontWeight:700,color:'#1E293B',marginBottom:18,fontSize:15}}><IcUsers size={18} style={{color:'#3B82F6'}}/>담당자 관리</div>
+                <AssigneeManager assignees={assignees} tasks={tasks} onAdd={addAssignee} onUpd={updAssignee} onDel={delAssignee}/>
+              </div>
+
+              {/* 데이터 */}
+              <div style={{...card,padding:24}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,fontWeight:700,color:'#1E293B',marginBottom:18,fontSize:15}}><IcArchive size={18} style={{color:'#10B981'}}/>데이터 백업 / 관리</div>
+                <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+                  <button onClick={exportJSON} style={{display:'flex',alignItems:'center',gap:7,padding:'11px 18px',borderRadius:10,border:'1px solid #A7F3D0',background:'#ECFDF5',color:'#047857',fontSize:14,fontWeight:600,cursor:'pointer'}}><IcDownload size={15}/>JSON Export</button>
+                  <button onClick={()=>importRef.current.click()} style={{display:'flex',alignItems:'center',gap:7,padding:'11px 18px',borderRadius:10,border:'1px solid #BFDBFE',background:'#EFF6FF',color:'#1D4ED8',fontSize:14,fontWeight:600,cursor:'pointer'}}><IcUpload size={15}/>JSON Import</button>
+                  <input ref={importRef} type="file" accept="application/json" onChange={importJSON} style={{display:'none'}}/>
+                  <button onClick={resetAll} style={{display:'flex',alignItems:'center',gap:7,padding:'11px 18px',borderRadius:10,border:'1px solid #FECACA',background:'#FEF2F2',color:'#EF4444',fontSize:14,fontWeight:600,cursor:'pointer',marginLeft:'auto'}}><IcTrash size={15}/>전체 초기화</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </main>
+      </div>
+
+      {/* ── Drawer ── */}
+      {liveTask&&<Drawer task={liveTask} onClose={()=>setSelId(null)} setStage={setStage} setRoot={setRoot} onDelete={()=>setConfirm({msg:'이 task를 삭제하시겠습니까? 되돌릴 수 없습니다.',onYes:()=>delTask(liveTask.id)})} assignees={assignees}/>}
+
+      {/* ── New task modal ── */}
+      {modal&&<NewTaskModal assignees={assignees} onClose={()=>setModal(false)} onAdd={t=>{setTasks(v=>[...v,t]);setModal(false);showToast('등록되었습니다');}}/>}
+
+      {/* ── Confirm modal ── */}
+      {confirm&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:10000,padding:16}}>
+          <div style={{background:'white',borderRadius:18,boxShadow:'0 24px 64px rgba(0,0,0,.25)',width:'100%',maxWidth:400,padding:24}}>
+            <div style={{display:'flex',alignItems:'flex-start',gap:12,marginBottom:20}}>
+              <div style={{width:40,height:40,borderRadius:'50%',background:'#FEF2F2',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,color:'#EF4444'}}><IcAlert size={20}/></div>
+              <span style={{fontSize:14,lineHeight:1.6,color:'#334155',paddingTop:4}}>{confirm.msg}</span>
+            </div>
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={()=>setConfirm(null)} style={{flex:1,padding:'11px 0',borderRadius:10,border:'1px solid #E2E8F0',background:'white',color:'#64748B',fontSize:14,fontWeight:600,cursor:'pointer'}}>취소</button>
+              <button onClick={()=>{confirm.onYes();setConfirm(null);}} style={{flex:1,padding:'11px 0',borderRadius:10,border:'none',background:'#EF4444',color:'white',fontSize:14,fontWeight:700,cursor:'pointer'}}>확인</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* toast */}
+      {toast&&<div style={{position:'fixed',bottom:24,left:'50%',transform:'translateX(-50%)',background:'#0F172A',color:'white',padding:'12px 22px',borderRadius:12,fontSize:13,fontWeight:600,zIndex:10001,boxShadow:'0 12px 32px rgba(0,0,0,.3)'}}>{toast}</div>}
+    </div>
+  );
+}
+
+/* ── Assignee manager (Setting) ──────────────────────────────────────── */
+function AssigneeManager({assignees,tasks,onAdd,onUpd,onDel}){
+  const [n,setN]=useState('');
+  const [edit,setEdit]=useState(null);
+  return (
+    <>
+      <div style={{display:'flex',gap:10,marginBottom:16}}>
+        <input value={n} onChange={e=>setN(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'){onAdd(n);setN('');}}} placeholder="담당자 이름" style={{flex:1,border:'1px solid #E2E8F0',borderRadius:10,padding:'11px 14px',fontSize:14}}/>
+        <button onClick={()=>{onAdd(n);setN('');}} style={{display:'flex',alignItems:'center',gap:6,background:'#3B82F6',color:'white',border:'none',borderRadius:10,padding:'11px 20px',fontSize:14,fontWeight:600,cursor:'pointer'}}><IcPlus size={15}/>추가</button>
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:8}}>
+        {assignees.map(a=>{
+          const on=tasks.filter(t=>t.assignee===a.name&&t.status==='ongoing').length;
+          const re=tasks.filter(t=>t.assignee===a.name&&t.status==='resolved').length;
+          return (
+            <div key={a.id} style={{display:'flex',alignItems:'center',gap:12,padding:'11px 14px',borderRadius:10,border:'1px solid #F1F5F9',background:'#FAFBFC'}}>
+              <span style={{width:10,height:10,borderRadius:'50%',background:'#3B82F6',flexShrink:0}}/>
+              {edit===a.id
+                ? <input defaultValue={a.name} autoFocus onBlur={e=>{onUpd(a.id,e.target.value);setEdit(null);}} onKeyDown={e=>{if(e.key==='Enter'){onUpd(a.id,e.target.value);setEdit(null);}if(e.key==='Escape')setEdit(null);}} style={{flex:1,border:'1px solid #3B82F6',borderRadius:6,padding:'4px 8px',fontSize:13}}/>
+                : <span style={{flex:1,fontWeight:600,fontSize:14,color:'#334155'}}>{a.name}</span>}
+              <span style={{fontSize:12,color:'#94A3B8'}}>진행 {on} · 완료 {re}</span>
+              <div style={{display:'flex',gap:2}}>
+                <button onClick={()=>setEdit(a.id)} style={{padding:6,borderRadius:6,border:'none',background:'none',color:'#94A3B8',cursor:'pointer',display:'flex'}}><IcEdit size={13}/></button>
+                <button onClick={()=>onDel(a)} style={{padding:6,borderRadius:6,border:'none',background:'none',color:'#94A3B8',cursor:'pointer',display:'flex'}}><IcTrash size={13}/></button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+/* ── New task modal ──────────────────────────────────────────────────── */
+function NewTaskModal({assignees,onClose,onAdd}){
+  const [f,setF]=useState({storeId:'',storeName:'',sourcingDate:fmt(today),assignee:assignees[0]?.name||''});
+  const ok=f.storeId.trim()&&f.storeName.trim()&&f.sourcingDate&&f.assignee;
+  const submit=()=>{
+    if(!ok)return;
+    const created=new Date().toISOString();
+    const stages=blankStages(); stages.s1.enteredAt=created;
+    onAdd({id:uid(),storeId:f.storeId.trim(),storeName:f.storeName.trim(),sourcingDate:f.sourcingDate,assignee:f.assignee,openArea:null,status:'ongoing',createdAt:created,resolvedAt:null,stages});
+  };
+  const L={display:'block',fontSize:12,fontWeight:700,color:'#475569',marginBottom:7};
+  const I=invalid=>({width:'100%',border:`1px solid ${invalid?'#FCA5A5':'#E2E8F0'}`,borderRadius:10,padding:'11px 13px',fontSize:14,background:'white'});
+  return (
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9998,padding:16}}>
+      <div style={{background:'white',borderRadius:20,boxShadow:'0 24px 64px rgba(0,0,0,.2)',width:'100%',maxWidth:440}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'18px 24px',borderBottom:'1px solid #F1F5F9'}}>
+          <span style={{fontSize:18,fontWeight:700,color:'#0F172A'}}>새 Task 등록</span>
+          <button onClick={onClose} style={{padding:6,borderRadius:8,border:'none',background:'none',cursor:'pointer',color:'#94A3B8',display:'flex'}}><IcX size={18}/></button>
+        </div>
+        <div style={{padding:'20px 24px',display:'flex',flexDirection:'column',gap:14}}>
+          <div><label style={L}>상호 <span style={{color:'#EF4444'}}>*</span></label><input value={f.storeName} onChange={e=>setF(v=>({...v,storeName:e.target.value}))} placeholder="예: 행복국밥" style={I(!f.storeName.trim())}/></div>
+          <div><label style={L}>스토어ID <span style={{color:'#EF4444'}}>*</span></label><input value={f.storeId} onChange={e=>setF(v=>({...v,storeId:e.target.value}))} placeholder="예: 10231" style={I(!f.storeId.trim())}/></div>
+          <div><label style={L}>소싱일 <span style={{color:'#EF4444'}}>*</span></label><input type="date" value={f.sourcingDate} onChange={e=>setF(v=>({...v,sourcingDate:e.target.value}))} style={I(!f.sourcingDate)}/></div>
+          <div><label style={L}>담당자 <span style={{color:'#EF4444'}}>*</span></label>
+            <select value={f.assignee} onChange={e=>setF(v=>({...v,assignee:e.target.value}))} style={I(!f.assignee)}>
+              <option value="">선택</option>{assignees.map(a=><option key={a.id}>{a.name}</option>)}
+            </select>
+          </div>
+        </div>
+        <div style={{padding:'0 24px 24px',display:'flex',gap:12}}>
+          <button onClick={onClose} style={{flex:1,padding:'13px 0',border:'1px solid #E2E8F0',borderRadius:12,fontSize:14,fontWeight:600,color:'#64748B',background:'white',cursor:'pointer'}}>취소</button>
+          <button onClick={submit} disabled={!ok} style={{flex:1,padding:'13px 0',border:'none',borderRadius:12,fontSize:14,fontWeight:700,color:'white',cursor:ok?'pointer':'not-allowed',background:ok?'#3B82F6':'#93C5FD',boxShadow:ok?'0 4px 14px -2px rgba(59,130,246,.45)':'none'}}>등록</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Drawer (8단계 체크리스트) ───────────────────────────────────────── */
+function StageSection({n,task,children}){
+  const done=stageComplete(task,n);
+  const cur=currentStage(task);
+  const st = done?ST_DONE : (n===cur?ST_CUR:ST_TODO);
+  return (
+    <div style={{border:'1px solid '+(n===cur&&!done?'#FDE68A':'#EAEDF4'),borderRadius:14,overflow:'hidden',background:'white'}}>
+      <div style={{display:'flex',alignItems:'center',gap:10,padding:'12px 16px',background:done?'#F0FDF4':(n===cur?'#FFFBEB':'#F8FAFC'),borderBottom:'1px solid #F1F5F9'}}>
+        <span style={{width:24,height:24,borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:800,color:'white',background:st.c}}>{done?<IcCheck size={14}/>:n}</span>
+        <span style={{fontSize:14,fontWeight:700,color:'#1E293B',flex:1}}>{n}. {STAGE_TITLES[n-1]}</span>
+        <span style={{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:999,background:st.bg,color:st.c}}>{st.label}</span>
+      </div>
+      <div style={{padding:16,display:'flex',flexDirection:'column',gap:12}}>{children}</div>
+    </div>
+  );
+}
+
+function Drawer({task,onClose,setStage,setRoot,onDelete,assignees}){
+  const id=task.id, s=task.stages;
+  const [editMode,setEditMode]=useState(false);
+  const [ef,setEf]=useState(null);
+  useEffect(()=>{ const onKey=e=>{if(e.key==='Escape')onClose();}; window.addEventListener('keydown',onKey); return ()=>window.removeEventListener('keydown',onKey); },[onClose]);
+  useEffect(()=>{ setEditMode(false); },[id]);
+  const cur=currentStage(task);
+  const startEdit=()=>{ setEf({storeId:task.storeId,storeName:task.storeName,sourcingDate:task.sourcingDate,assignee:task.assignee}); setEditMode(true); };
+  const efOk=ef&&ef.storeId.trim()&&ef.storeName.trim()&&ef.sourcingDate&&ef.assignee;
+  const saveEdit=()=>{
+    if(!efOk) return;
+    setRoot(id,{storeId:ef.storeId.trim(),storeName:ef.storeName.trim(),sourcingDate:ef.sourcingDate,assignee:ef.assignee});
+    setEditMode(false);
+  };
+
+  return (
+    <>
+      <div onClick={onClose} style={{position:'fixed',inset:0,background:'rgba(15,23,42,.35)',zIndex:9990}}/>
+      <div style={{position:'fixed',top:0,right:0,bottom:0,width:480,maxWidth:'100vw',background:'#F8FAFC',zIndex:9991,boxShadow:'-12px 0 40px -12px rgba(16,24,40,.4)',display:'flex',flexDirection:'column',animation:'slideIn .22s ease'}}>
+        {/* header */}
+        <div style={{background:'white',borderBottom:'1px solid #EAEDF4',padding:'16px 20px',flexShrink:0}}>
+          <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:8}}>
+            <div style={{minWidth:0,flex:1}}>
+              <div style={{display:'flex',alignItems:'center',gap:9,flexWrap:'wrap'}}>
+                <span style={{fontSize:17,fontWeight:800,color:'#0F172A'}}>{task.storeName}</span>
+                <span style={{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:999,background:task.status==='resolved'?'#ECFDF5':'#FFFBEB',color:task.status==='resolved'?'#047857':'#D97706'}}>{task.status==='resolved'?'완료':`${cur}. ${STAGE_SHORT[cur-1]} 진행중`}</span>
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:7,marginTop:5,fontSize:12,color:'#94A3B8',flexWrap:'wrap'}}>
+                <span>#{task.storeId}</span><span>·</span><span>{task.assignee}</span><span>·</span><span>소싱 {task.sourcingDate}</span>
+              </div>
+            </div>
+            <div style={{display:'flex',gap:4,flexShrink:0}}>
+              <button onClick={editMode?()=>setEditMode(false):startEdit} title="수정" style={{padding:7,borderRadius:8,border:'1px solid #E2E8F0',background:editMode?'#EFF6FF':'white',color:editMode?'#3B82F6':'#64748B',cursor:'pointer',display:'flex'}}><IcEdit size={15}/></button>
+              <button onClick={onClose} title="닫기" style={{padding:7,borderRadius:8,border:'1px solid #E2E8F0',background:'white',color:'#64748B',cursor:'pointer',display:'flex'}}><IcX size={16}/></button>
+            </div>
+          </div>
+          {editMode&&ef&&(
+            <div style={{marginTop:14,padding:14,borderRadius:12,background:'#F8FAFC',border:'1px solid #E2E8F0',display:'flex',flexDirection:'column',gap:10}}>
+              <div style={{display:'flex',gap:10}}>
+                <Fld label="상호 *" value={ef.storeName} onChange={v=>setEf(p=>({...p,storeName:v}))}/>
+                <Fld label="스토어ID *" value={ef.storeId} onChange={v=>setEf(p=>({...p,storeId:v}))}/>
+              </div>
+              <div style={{display:'flex',gap:10}}>
+                <Fld label="소싱일 *" type="date" value={ef.sourcingDate} onChange={v=>setEf(p=>({...p,sourcingDate:v}))}/>
+                <div style={{flex:1}}>
+                  <label style={{display:'block',fontSize:11,fontWeight:700,color:'#64748B',marginBottom:5}}>담당자 *</label>
+                  <select value={ef.assignee} onChange={e=>setEf(p=>({...p,assignee:e.target.value}))} style={{width:'100%',border:'1px solid #E2E8F0',borderRadius:9,padding:'9px 11px',fontSize:13,background:'#F8FAFC'}}>
+                    <option value="">선택</option>{assignees.map(a=><option key={a.id}>{a.name}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div style={{display:'flex',gap:8,justifyContent:'flex-end'}}>
+                <button onClick={()=>setEditMode(false)} style={{padding:'8px 16px',borderRadius:9,border:'1px solid #E2E8F0',background:'white',color:'#64748B',fontSize:13,fontWeight:600,cursor:'pointer'}}>취소</button>
+                <button onClick={saveEdit} disabled={!efOk} style={{padding:'8px 16px',borderRadius:9,border:'none',background:efOk?'#3B82F6':'#93C5FD',color:'white',fontSize:13,fontWeight:700,cursor:efOk?'pointer':'not-allowed'}}>저장</button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* stages */}
+        <div style={{flex:1,overflowY:'auto',padding:18,display:'flex',flexDirection:'column',gap:14}}>
+
+          <StageSection n={1} task={task}>
+            <Chk checked={s.s1.preCallCheck} onChange={v=>setStage(id,'s1',{preCallCheck:v})} label="통화 전 확인 (스토어정보·전화번호·계좌정보 사전 확인)"/>
+            <Chk checked={s.s1.inspectionDone} onChange={v=>setStage(id,'s1',{inspectionDone:v})} label="인스팩션 완료"/>
+            <div><label style={{display:'block',fontSize:11,fontWeight:700,color:'#64748B',marginBottom:6}}>오픈지역 여부 (단계7 분기)</label>
+              <Pick value={task.openArea} onChange={v=>setRoot(id,{openArea:v})} options={[['open','오픈지역','#3B82F6'],['unopen','미오픈지역','#8B5CF6']]}/>
+            </div>
+          </StageSection>
+
+          <StageSection n={2} task={task}>
+            <div><label style={{display:'block',fontSize:11,fontWeight:700,color:'#64748B',marginBottom:6}}>테블릿 도착</label>
+              <Pick value={s.s2.tabletArrived} onChange={v=>setStage(id,'s2',{tabletArrived:v})} options={[['arrived','도착','#10B981'],['not_arrived','미도착','#94A3B8']]}/></div>
+            <div><label style={{display:'block',fontSize:11,fontWeight:700,color:'#64748B',marginBottom:6}}>인터넷 연결</label>
+              <Pick value={s.s2.internet} onChange={v=>setStage(id,'s2',{internet:v})} options={[['success','성공','#10B981'],['fail','실패','#EF4444']]}/></div>
+          </StageSection>
+
+          <StageSection n={3} task={task}>
+            <div style={{display:'flex',gap:10}}>
+              <Fld label="이름" value={s.s3.name} onChange={v=>setStage(id,'s3',{name:v})}/>
+              <Fld label="휴대폰번호" value={s.s3.phone} onChange={v=>setStage(id,'s3',{phone:v})} placeholder="010-0000-0000"/>
+            </div>
+            <Chk checked={s.s3.isOwner} onChange={v=>setStage(id,'s3',{isOwner:v})} label="오너 여부 확인"/>
+            <Chk checked={s.s3.contractConfirmed} onChange={v=>setStage(id,'s3',{contractConfirmed:v})} label="계약 사실 여부 확인"/>
+          </StageSection>
+
+          <StageSection n={4} task={task}>
+            <div style={{display:'flex',gap:10}}>
+              <Fld label="은행" value={s.s4.bank} onChange={v=>setStage(id,'s4',{bank:v})}/>
+              <Fld label="예금주" value={s.s4.holder} onChange={v=>setStage(id,'s4',{holder:v})}/>
+            </div>
+            <div style={{display:'flex',gap:10}}>
+              <Fld label="지점번호" value={s.s4.branchNo} onChange={v=>setStage(id,'s4',{branchNo:v})}/>
+              <Fld label="계좌번호" value={s.s4.accountNo} onChange={v=>setStage(id,'s4',{accountNo:v})}/>
+            </div>
+          </StageSection>
+
+          <StageSection n={5} task={task}>
+            <Pick value={s.s5.feeGuide} onChange={v=>setStage(id,'s5',{feeGuide:v})} options={[['done','안내완료','#10B981'],['not_yet','미안내(Ins)','#F59E0B']]}/>
+          </StageSection>
+
+          <StageSection n={6} task={task}>
+            <Chk checked={s.s6.testOrder} onChange={v=>setStage(id,'s6',{testOrder:v})} label="테스트 오더 확인"/>
+          </StageSection>
+
+          <StageSection n={7} task={task}>
+            {task.openArea==='open'
+              ? <Fld label="라이브 희망일 (오픈지역)" type="date" value={s.s7.liveDateWish} onChange={v=>setStage(id,'s7',{liveDateWish:v})}/>
+              : task.openArea==='unopen'
+                ? <Chk checked={s.s7.smsPlanned} onChange={v=>setStage(id,'s7',{smsPlanned:v})} label="오픈일 확정 시 SMS 안내 예정 (미오픈지역)"/>
+                : <div style={{fontSize:12,color:'#94A3B8',padding:'4px 2px'}}>단계1에서 오픈지역 여부를 먼저 선택하세요.</div>}
+          </StageSection>
+
+          <StageSection n={8} task={task}>
+            <Fld label="해피콜 결과값" value={s.s8.sfResult} onChange={v=>setStage(id,'s8',{sfResult:v})} placeholder="예: 라이브 확정"/>
+            <div>
+              <label style={{display:'block',fontSize:11,fontWeight:700,color:'#64748B',marginBottom:5}}>라이브일정 등 메모</label>
+              <textarea value={s.s8.sfMemo||''} onChange={e=>setStage(id,'s8',{sfMemo:e.target.value})} rows={3} style={{width:'100%',border:'1px solid #E2E8F0',borderRadius:9,padding:'9px 11px',fontSize:13,background:'#F8FAFC',resize:'vertical',fontFamily:'inherit'}}/>
+            </div>
+            {task.status==='resolved'&&(
+              <div style={{display:'flex',alignItems:'center',gap:8,padding:'12px 14px',borderRadius:10,background:'#ECFDF5',border:'1px solid #A7F3D0',color:'#047857',fontSize:13,fontWeight:700}}>
+                <IcCheck size={16}/>수고하셨습니다. (완료 처리됨 · 완료일 {fmt(new Date(task.resolvedAt))})
+              </div>
+            )}
+          </StageSection>
+
+        </div>
+
+        {/* footer */}
+        <div style={{background:'white',borderTop:'1px solid #EAEDF4',padding:'12px 18px',flexShrink:0}}>
+          <button onClick={onDelete} style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'center',gap:7,padding:'11px 0',borderRadius:10,border:'1px solid #FECACA',background:'#FEF2F2',color:'#EF4444',fontSize:14,fontWeight:600,cursor:'pointer'}}><IcTrash size={15}/>이 Task 삭제</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
