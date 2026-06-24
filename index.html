@@ -788,18 +788,19 @@ function NewTaskModal({assignees,onClose,onAdd}){
 }
 
 /* ── Drawer (8단계 체크리스트) ───────────────────────────────────────── */
-function StageSection({n,task,children}){
+function StageSection({n,task,open,onToggle,children}){
   const done=stageComplete(task,n);
   const cur=currentStage(task);
   const st = done?ST_DONE : (n===cur?ST_CUR:ST_TODO);
   return (
     <div style={{border:'1px solid '+(n===cur&&!done?'#FDE68A':'#EAEDF4'),borderRadius:14,overflow:'hidden',background:'white'}}>
-      <div style={{display:'flex',alignItems:'center',gap:10,padding:'12px 16px',background:done?'#F0FDF4':(n===cur?'#FFFBEB':'#F8FAFC'),borderBottom:'1px solid #F1F5F9'}}>
+      <div onClick={onToggle} style={{display:'flex',alignItems:'center',gap:10,padding:'12px 16px',cursor:'pointer',background:done?'#F0FDF4':(n===cur?'#FFFBEB':'#F8FAFC'),borderBottom:open?'1px solid #F1F5F9':'none'}}>
         <span style={{width:24,height:24,borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:800,color:'white',background:st.c}}>{done?<IcCheck size={14}/>:n}</span>
         <span style={{fontSize:14,fontWeight:700,color:'#1E293B',flex:1}}>{n}. {STAGE_TITLES[n-1]}</span>
         <span style={{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:999,background:st.bg,color:st.c}}>{st.label}</span>
+        <IcChevD size={16} style={{color:'#94A3B8',flexShrink:0,transform:open?'none':'rotate(-90deg)',transition:'transform .2s'}}/>
       </div>
-      <div style={{padding:16,display:'flex',flexDirection:'column',gap:12}}>{children}</div>
+      {open&&<div style={{padding:16,display:'flex',flexDirection:'column',gap:12}}>{children}</div>}
     </div>
   );
 }
@@ -811,6 +812,9 @@ function Drawer({task,onClose,setStage,setRoot,onDelete,assignees}){
   useEffect(()=>{ const onKey=e=>{if(e.key==='Escape')onClose();}; window.addEventListener('keydown',onKey); return ()=>window.removeEventListener('keydown',onKey); },[onClose]);
   useEffect(()=>{ setEditMode(false); },[id]);
   const cur=currentStage(task);
+  const [openStage,setOpenStage]=useState(cur);
+  useEffect(()=>{ setOpenStage(cur); },[id,cur]);  // 단계 진입(또는 task 전환) 시 해당 단계 자동 펼침
+  const acc=n=>({open:openStage===n,onToggle:()=>setOpenStage(p=>p===n?0:n)});
   const startEdit=()=>{ setEf({storeId:task.storeId,storeName:task.storeName,sourcingDate:task.sourcingDate,assignee:task.assignee}); setEditMode(true); };
   const efOk=ef&&ef.storeId.trim()&&ef.storeName.trim()&&ef.sourcingDate&&ef.assignee;
   const saveEdit=()=>{
@@ -866,7 +870,7 @@ function Drawer({task,onClose,setStage,setRoot,onDelete,assignees}){
         {/* stages */}
         <div style={{flex:1,overflowY:'auto',padding:18,display:'flex',flexDirection:'column',gap:14}}>
 
-          <StageSection n={1} task={task}>
+          <StageSection n={1} task={task} {...acc(1)}>
             <Chk checked={s.s1.preCallCheck} onChange={v=>setStage(id,'s1',{preCallCheck:v})} label="통화 전 확인 (스토어정보·전화번호·계좌정보 사전 확인)"/>
             <Chk checked={s.s1.inspectionDone} onChange={v=>setStage(id,'s1',{inspectionDone:v})} label="인스팩션 완료"/>
             <div><label style={{display:'block',fontSize:11,fontWeight:700,color:'#64748B',marginBottom:6}}>오픈지역 여부 (단계7 분기)</label>
@@ -874,14 +878,14 @@ function Drawer({task,onClose,setStage,setRoot,onDelete,assignees}){
             </div>
           </StageSection>
 
-          <StageSection n={2} task={task}>
+          <StageSection n={2} task={task} {...acc(2)}>
             <div><label style={{display:'block',fontSize:11,fontWeight:700,color:'#64748B',marginBottom:6}}>테블릿 도착</label>
               <Pick value={s.s2.tabletArrived} onChange={v=>setStage(id,'s2',{tabletArrived:v})} options={[['arrived','도착','#10B981'],['not_arrived','미도착','#94A3B8']]}/></div>
             <div><label style={{display:'block',fontSize:11,fontWeight:700,color:'#64748B',marginBottom:6}}>인터넷 연결</label>
               <Pick value={s.s2.internet} onChange={v=>setStage(id,'s2',{internet:v})} options={[['success','성공','#10B981'],['fail','실패','#EF4444']]}/></div>
           </StageSection>
 
-          <StageSection n={3} task={task}>
+          <StageSection n={3} task={task} {...acc(3)}>
             <div style={{display:'flex',gap:10}}>
               <Fld label="이름" value={s.s3.name} onChange={v=>setStage(id,'s3',{name:v})}/>
               <Fld label="휴대폰번호" value={s.s3.phone} onChange={v=>setStage(id,'s3',{phone:v})} placeholder="010-0000-0000"/>
@@ -890,7 +894,7 @@ function Drawer({task,onClose,setStage,setRoot,onDelete,assignees}){
             <Chk checked={s.s3.contractConfirmed} onChange={v=>setStage(id,'s3',{contractConfirmed:v})} label="계약 사실 여부 확인"/>
           </StageSection>
 
-          <StageSection n={4} task={task}>
+          <StageSection n={4} task={task} {...acc(4)}>
             <div style={{display:'flex',gap:10}}>
               <Fld label="은행" value={s.s4.bank} onChange={v=>setStage(id,'s4',{bank:v})}/>
               <Fld label="예금주" value={s.s4.holder} onChange={v=>setStage(id,'s4',{holder:v})}/>
@@ -901,15 +905,15 @@ function Drawer({task,onClose,setStage,setRoot,onDelete,assignees}){
             </div>
           </StageSection>
 
-          <StageSection n={5} task={task}>
+          <StageSection n={5} task={task} {...acc(5)}>
             <Pick value={s.s5.feeGuide} onChange={v=>setStage(id,'s5',{feeGuide:v})} options={[['done','안내완료','#10B981'],['not_yet','미안내(Ins)','#F59E0B']]}/>
           </StageSection>
 
-          <StageSection n={6} task={task}>
+          <StageSection n={6} task={task} {...acc(6)}>
             <Chk checked={s.s6.testOrder} onChange={v=>setStage(id,'s6',{testOrder:v})} label="테스트 오더 확인"/>
           </StageSection>
 
-          <StageSection n={7} task={task}>
+          <StageSection n={7} task={task} {...acc(7)}>
             {task.openArea==='open'
               ? <Fld label="라이브 희망일 (오픈지역)" type="date" value={s.s7.liveDateWish} onChange={v=>setStage(id,'s7',{liveDateWish:v})}/>
               : task.openArea==='unopen'
@@ -917,7 +921,7 @@ function Drawer({task,onClose,setStage,setRoot,onDelete,assignees}){
                 : <div style={{fontSize:12,color:'#94A3B8',padding:'4px 2px'}}>단계1에서 오픈지역 여부를 먼저 선택하세요.</div>}
           </StageSection>
 
-          <StageSection n={8} task={task}>
+          <StageSection n={8} task={task} {...acc(8)}>
             <Fld label="해피콜 결과값" value={s.s8.sfResult} onChange={v=>setStage(id,'s8',{sfResult:v})} placeholder="예: 라이브 확정"/>
             <div>
               <label style={{display:'block',fontSize:11,fontWeight:700,color:'#64748B',marginBottom:5}}>라이브일정 등 메모</label>
