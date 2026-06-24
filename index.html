@@ -798,7 +798,7 @@ function StageSection({n,task,open,onToggle,children}){
         <span style={{width:24,height:24,borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:800,color:'white',background:st.c}}>{done?<IcCheck size={14}/>:n}</span>
         <span style={{fontSize:14,fontWeight:700,color:'#1E293B',flex:1}}>{n}. {STAGE_TITLES[n-1]}</span>
         <span style={{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:999,background:st.bg,color:st.c}}>{st.label}</span>
-        <IcChevD size={16} style={{color:'#94A3B8',flexShrink:0,transform:open?'none':'rotate(-90deg)',transition:'transform .2s'}}/>
+        <IcChevD size={16} style={{color:'#94A3B8',flexShrink:0,transform:open?'rotate(180deg)':'none',transition:'transform .2s'}}/>
       </div>
       {open&&<div style={{padding:16,display:'flex',flexDirection:'column',gap:12}}>{children}</div>}
     </div>
