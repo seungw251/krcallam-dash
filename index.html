@@ -12,29 +12,46 @@
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.4/babel.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','Pretendard','Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#EEF1F8;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;letter-spacing:-0.011em;font-feature-settings:'cv02','cv03','cv04','tnum';color:#1E293B}
-    input,select,textarea,button{font-family:inherit}
+    body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Inter','Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#F2F2F7;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;letter-spacing:-0.022em;font-feature-settings:'cv02','cv03','cv04','tnum';color:#1C1C1E}
+    input,select,textarea,button{font-family:inherit;letter-spacing:inherit}
     ::-webkit-scrollbar{width:8px;height:8px}
     ::-webkit-scrollbar-track{background:transparent}
-    ::-webkit-scrollbar-thumb{background:#C7CEDC;border-radius:4px;border:2px solid transparent;background-clip:padding-box}
-    ::-webkit-scrollbar-thumb:hover{background:#A8B2C6;background-clip:padding-box}
-    #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:#EEF1F8;z-index:9999}
-    .spin{width:34px;height:34px;border:3px solid #DCE2EE;border-top-color:#3B82F6;border-radius:50%;animation:sp .7s linear infinite}
+    ::-webkit-scrollbar-thumb{background:rgba(60,60,67,.28);border-radius:4px;border:2px solid transparent;background-clip:padding-box}
+    ::-webkit-scrollbar-thumb:hover{background:rgba(60,60,67,.45);background-clip:padding-box}
+    #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:#F2F2F7;z-index:9999}
+    .spin{width:34px;height:34px;border:3px solid #E5E5EA;border-top-color:#007AFF;border-radius:50%;animation:sp .7s linear infinite}
     @keyframes sp{to{transform:rotate(360deg)}}
     @keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
-    .row-item{transition:background .14s}
-    .row-item:hover{background:rgba(59,130,246,.05)!important}
-    .bar{transition:filter .14s,transform .14s;cursor:pointer}
-    .bar:hover{filter:brightness(1.05);transform:translateY(-1px)}
-    .nbtn{transition:background .14s;cursor:pointer}
-    .nbtn:hover{background:#EEF1F8!important}
-    .selbtn{transition:border-color .14s,box-shadow .14s,background-color .14s}
-    .selbtn:hover{border-color:#CBD5E1!important;box-shadow:0 2px 8px -2px rgba(16,24,40,.12)!important}
-    input:focus,select:focus,textarea:focus{outline:2px solid #3B82F6;outline-offset:-1px}
+    @keyframes popIn{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes toastUp{from{transform:translate(-50%,16px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+    .row-item{transition:background .18s}
+    .row-item:hover{background:rgba(0,122,255,.06)!important}
+    .row-item:active{background:rgba(0,122,255,.1)!important}
+    .bar{transition:filter .18s,transform .18s;cursor:pointer}
+    .bar:hover{filter:brightness(1.04);transform:translateY(-2px)}
+    .nbtn{transition:background .18s,transform .1s;cursor:pointer}
+    .nbtn:hover{background:rgba(120,120,128,.16)!important}
+    .nbtn:active{transform:scale(.94)}
+    .selbtn{transition:box-shadow .18s,background-color .18s;-webkit-appearance:none;appearance:none}
+    .selbtn:hover{background:rgba(120,120,128,.18)!important}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:#007AFF!important;box-shadow:0 0 0 3.5px rgba(0,122,255,.18)}
+    .ios-btn{transition:transform .1s ease,filter .15s,opacity .15s}
+    .ios-btn:hover{filter:brightness(1.05)}
+    .ios-btn:active{transform:scale(.96);opacity:.85}
+    .ios-switch{position:relative;width:51px;height:31px;flex-shrink:0;border-radius:999px;background:#E5E5EA;transition:background .25s cubic-bezier(.4,0,.2,1);cursor:pointer}
+    .ios-switch.on{background:#34C759}
+    .ios-switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+    .ios-switch .knob{position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.15),0 1px 1px rgba(0,0,0,.16);transition:transform .25s cubic-bezier(.4,0,.2,1)}
+    .ios-switch.on .knob{transform:translateX(20px)}
+    .ios-seg{display:inline-flex;background:rgba(120,120,128,.12);border-radius:9px;padding:2px;gap:2px}
+    .ios-seg button{border:none;background:transparent;border-radius:7px;padding:6px 16px;font-size:13px;font-weight:600;color:#1C1C1E;cursor:pointer;transition:all .2s}
+    .ios-seg button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12),0 1px 1px rgba(0,0,0,.04)}
+    .ios-seg button:not(.on):active{opacity:.5}
   </style>
 </head>
 <body>
-  <div id="loading"><div class="spin"></div><span style="color:#94A3B8;font-size:13px">Loading...</span></div>
+  <div id="loading"><div class="spin"></div><span style="color:#AEAEB2;font-size:13px">Loading...</span></div>
   <div id="root"></div>
 <script type="text/babel">
 const { useState, useMemo, useRef, useEffect } = React;
@@ -162,36 +179,38 @@ const STORAGE='happycall_dashboard_v1';
 const loadState=()=>{ try{const r=localStorage.getItem(STORAGE); if(r){const o=JSON.parse(r); if(o&&o.tasks&&o.assignees)return o;}}catch(e){} return null; };
 const init=loadState()||{tasks:SEED_TASKS,assignees:INIT_ASSIGNEES};
 
-const card={background:'white',borderRadius:16,border:'1px solid #EAEDF4',boxShadow:'0 1px 2px rgba(16,24,40,.04),0 8px 24px -12px rgba(16,24,40,.12)'};
-const ST_DONE={c:'#10B981',bg:'#ECFDF5',label:'완료'},ST_CUR={c:'#F59E0B',bg:'#FFFBEB',label:'진행중'},ST_TODO={c:'#94A3B8',bg:'#F1F5F9',label:'미시작'};
+const card={background:'rgba(255,255,255,.92)',borderRadius:20,border:'1px solid rgba(0,0,0,.05)',boxShadow:'0 1px 2px rgba(0,0,0,.04),0 12px 32px -16px rgba(0,0,0,.18)'};
+const ST_DONE={c:'#34C759',bg:'#E7F9ED',label:'완료'},ST_CUR={c:'#FF9500',bg:'#FFF6E6',label:'진행중'},ST_TODO={c:'#AEAEB2',bg:'#F2F2F7',label:'미시작'};
 
 /* ── Small UI atoms ──────────────────────────────────────────────────── */
 const Chk=({checked,onChange,label})=>(
-  <label style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer',padding:'9px 12px',borderRadius:10,border:'1px solid '+(checked?'#A7F3D0':'#F1F5F9'),background:checked?'#ECFDF5':'#FAFBFC'}}>
-    <input type="checkbox" checked={checked} onChange={e=>onChange(e.target.checked)} style={{width:16,height:16,accentColor:'#10B981',cursor:'pointer'}}/>
-    <span style={{fontSize:13,fontWeight:600,color:checked?'#047857':'#475569'}}>{label}</span>
+  <label style={{display:'flex',alignItems:'center',gap:12,cursor:'pointer',padding:'11px 14px',borderRadius:13,border:'1px solid '+(checked?'rgba(52,199,89,.35)':'rgba(0,0,0,.05)'),background:checked?'#E7F9ED':'#fff',transition:'all .2s'}}>
+    <span style={{fontSize:14,fontWeight:600,color:checked?'#248A3D':'#1C1C1E',flex:1,lineHeight:1.35}}>{label}</span>
+    <span className={'ios-switch'+(checked?' on':'')}>
+      <input type="checkbox" checked={checked} onChange={e=>onChange(e.target.checked)}/>
+      <span className="knob"/>
+    </span>
   </label>
 );
 const Pick=({value,onChange,options})=>(
   <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
     {options.map(([v,l,c])=>{const on=value===v;return(
-      <button key={String(v)} onClick={()=>onChange(v)} style={{padding:'8px 16px',borderRadius:10,cursor:'pointer',fontSize:13,fontWeight:600,transition:'all .12s',
-        border:'1px solid '+(on?c:'#E2E8F0'),background:on?c:'white',color:on?'white':'#64748B',boxShadow:on?`0 2px 6px -1px ${c}66`:'none'}}>{l}</button>
+      <button key={String(v)} className="ios-btn" onClick={()=>onChange(v)} style={{padding:'9px 18px',borderRadius:999,cursor:'pointer',fontSize:13,fontWeight:600,
+        border:'1px solid '+(on?c:'rgba(0,0,0,.08)'),background:on?c:'#fff',color:on?'white':'#8E8E93',boxShadow:on?`0 4px 12px -2px ${c}59`:'none'}}>{l}</button>
     );})}
   </div>
 );
 const Fld=({label,value,onChange,placeholder,type='text'})=>(
   <div style={{flex:1,minWidth:0}}>
-    <label style={{display:'block',fontSize:11,fontWeight:700,color:'#64748B',marginBottom:5}}>{label}</label>
+    <label style={{display:'block',fontSize:11,fontWeight:700,color:'#8E8E93',marginBottom:5}}>{label}</label>
     <input type={type} value={value||''} onChange={e=>onChange(e.target.value)} placeholder={placeholder}
-      style={{width:'100%',border:'1px solid #E2E8F0',borderRadius:9,padding:'9px 11px',fontSize:13,background:'#F8FAFC'}}/>
+      style={{width:'100%',border:'1px solid #E5E5EA',borderRadius:11,padding:'10px 13px',fontSize:14,background:'#fff',transition:'box-shadow .18s,border-color .18s'}}/>
   </div>
 );
 const Seg=({value,onChange,options})=>(
-  <div style={{display:'flex',border:'1px solid #E2E8F0',borderRadius:10,overflow:'hidden',background:'white',boxShadow:'0 1px 2px rgba(16,24,40,.04)'}}>
+  <div className="ios-seg">
     {options.map(([v,l])=>(
-      <button key={v} onClick={()=>onChange(v)} style={{padding:'9px 18px',border:'none',cursor:'pointer',fontSize:13,fontWeight:600,transition:'all .15s',
-        background:value===v?'#3B82F6':'transparent',color:value===v?'white':'#64748B'}}>{l}</button>
+      <button key={v} className={value===v?'on':''} onClick={()=>onChange(v)}>{l}</button>
     ))}
   </div>
 );
@@ -207,13 +226,13 @@ function LineChart({buckets}){
   const grid=[0,.25,.5,.75,1].map(f=>Math.round(max*f));
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%',height:'auto'}}>
-      {grid.map((g,i)=>{const yy=y(g);return(<g key={i}><line x1={padL} y1={yy} x2={W-padR} y2={yy} stroke="#F1F5F9"/><text x={padL-6} y={yy+3} fontSize="9" fill="#CBD5E1" textAnchor="end">{g}</text></g>);})}
-      <polyline fill="none" stroke="#3B82F6" strokeWidth="2.5" points={pts('reg')}/>
-      <polyline fill="none" stroke="#10B981" strokeWidth="2.5" points={pts('res')}/>
+      {grid.map((g,i)=>{const yy=y(g);return(<g key={i}><line x1={padL} y1={yy} x2={W-padR} y2={yy} stroke="#F2F2F7"/><text x={padL-6} y={yy+3} fontSize="9" fill="#C7C7CC" textAnchor="end">{g}</text></g>);})}
+      <polyline fill="none" stroke="#007AFF" strokeWidth="2.5" points={pts('reg')}/>
+      <polyline fill="none" stroke="#34C759" strokeWidth="2.5" points={pts('res')}/>
       {buckets.map((b,i)=>(<g key={i}>
-        <circle cx={x(i)} cy={y(b.reg)} r="3" fill="#3B82F6"/>
-        <circle cx={x(i)} cy={y(b.res)} r="3" fill="#10B981"/>
-        <text x={x(i)} y={H-10} fontSize="9.5" fill="#94A3B8" textAnchor="middle">{b.label}</text>
+        <circle cx={x(i)} cy={y(b.reg)} r="3" fill="#007AFF"/>
+        <circle cx={x(i)} cy={y(b.res)} r="3" fill="#34C759"/>
+        <text x={x(i)} y={H-10} fontSize="9.5" fill="#AEAEB2" textAnchor="middle">{b.label}</text>
       </g>))}
     </svg>
   );
@@ -369,27 +388,27 @@ function App(){
   const TITLE={dash:'Dashboard',ongoing:'Ongoing',resolved:'Resolved',setting:'Setting'};
 
   return (
-    <div style={{display:'flex',height:'100vh',background:'#EEF1F8',overflow:'hidden'}}>
+    <div style={{display:'flex',height:'100vh',background:'#F2F2F7',overflow:'hidden'}}>
 
       {/* ── Sidebar ── */}
-      <aside style={{width:col?64:224,background:'linear-gradient(180deg,#111A2E 0%,#0C1322 100%)',display:'flex',flexDirection:'column',flexShrink:0,transition:'width .2s',zIndex:10,boxShadow:'4px 0 24px -12px rgba(16,24,40,.45)'}}>
-        <div style={{height:56,display:'flex',alignItems:'center',justifyContent:col?'center':'space-between',padding:'0 14px',borderBottom:'1px solid rgba(255,255,255,.08)'}}>
-          {!col&&<span style={{fontWeight:800,fontSize:14,letterSpacing:.5,color:'#60A5FA'}}>해피콜 워크플로우</span>}
-          <button className="nbtn" onClick={()=>setCol(v=>!v)} style={{padding:6,borderRadius:8,background:'transparent',border:'none',color:'#64748B',display:'flex'}}>{col?<IcChevR size={16}/>:<IcChevL size={16}/>}</button>
+      <aside style={{width:col?68:236,background:'rgba(249,249,251,.8)',backdropFilter:'saturate(180%) blur(24px)',WebkitBackdropFilter:'saturate(180%) blur(24px)',display:'flex',flexDirection:'column',flexShrink:0,transition:'width .24s cubic-bezier(.4,0,.2,1)',zIndex:10,borderRight:'1px solid rgba(0,0,0,.07)'}}>
+        <div style={{height:60,display:'flex',alignItems:'center',justifyContent:col?'center':'space-between',padding:'0 16px'}}>
+          {!col&&<span style={{fontWeight:700,fontSize:15,letterSpacing:'-0.02em',color:'#1C1C1E'}}>해피콜 <span style={{color:'#007AFF'}}>워크플로우</span></span>}
+          <button className="nbtn" onClick={()=>setCol(v=>!v)} style={{padding:7,borderRadius:9,background:'transparent',border:'none',color:'#8E8E93',display:'flex'}}>{col?<IcChevR size={16}/>:<IcChevL size={16}/>}</button>
         </div>
-        <nav style={{flex:1,padding:'10px 0'}}>
+        <nav style={{flex:1,padding:col?'8px 10px':'8px 12px',display:'flex',flexDirection:'column',gap:3}}>
           {NAV.map(({id,Icon,label})=>(
-            <button key={id} onClick={()=>setView(id)} style={{width:'100%',display:'flex',alignItems:'center',gap:13,padding:col?'13px 0':'12px 16px',justifyContent:col?'center':'flex-start',
-              background:view===id?'rgba(59,130,246,.15)':'transparent',borderLeft:`3px solid ${view===id?'#3B82F6':'transparent'}`,border:'none',color:view===id?'#93C5FD':'#7C8AA5',cursor:'pointer',fontSize:14,fontWeight:view===id?600:500,transition:'all .15s'}}>
-              <Icon size={18}/>{!col&&<span>{label}</span>}
+            <button key={id} className="ios-btn" onClick={()=>setView(id)} style={{width:'100%',display:'flex',alignItems:'center',gap:12,padding:col?'11px 0':'11px 13px',justifyContent:col?'center':'flex-start',borderRadius:12,
+              background:view===id?'#007AFF':'transparent',border:'none',color:view===id?'#fff':'#48484A',cursor:'pointer',fontSize:14.5,fontWeight:view===id?600:500,boxShadow:view===id?'0 6px 16px -4px rgba(0,122,255,.5)':'none'}}>
+              <Icon size={19}/>{!col&&<span>{label}</span>}
             </button>
           ))}
         </nav>
         {!col&&(
-          <div style={{padding:14,borderTop:'1px solid rgba(255,255,255,.08)'}}>
-            <div style={{display:'flex',alignItems:'flex-start',gap:8,padding:'10px 11px',borderRadius:10,background:'rgba(245,158,11,.12)',border:'1px solid rgba(245,158,11,.25)'}}>
-              <IcAlert size={15} style={{color:'#FBBF24',flexShrink:0,marginTop:1}}/>
-              <span style={{fontSize:10.5,lineHeight:1.5,color:'#FCD34D'}}>데이터는 이 브라우저에만 저장됩니다. Setting에서 정기적으로 JSON 백업하세요.</span>
+          <div style={{padding:14}}>
+            <div style={{display:'flex',alignItems:'flex-start',gap:9,padding:'12px 13px',borderRadius:14,background:'rgba(255,149,0,.1)'}}>
+              <IcAlert size={15} style={{color:'#FF9500',flexShrink:0,marginTop:1}}/>
+              <span style={{fontSize:11,lineHeight:1.5,color:'#C04E00',fontWeight:500}}>데이터는 이 브라우저에만 저장됩니다. Setting에서 정기적으로 JSON 백업하세요.</span>
             </div>
           </div>
         )}
@@ -397,12 +416,11 @@ function App(){
 
       <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
         {/* ── Header ── */}
-        <header style={{height:62,background:'white',borderBottom:'1px solid #EAEDF4',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 24px',flexShrink:0,boxShadow:'0 1px 3px rgba(16,24,40,.05)'}}>
-          <div style={{display:'flex',alignItems:'center',gap:8,fontSize:14,color:'#94A3B8'}}>
-            <IcHome size={15}/><span style={{color:'#CBD5E1'}}>/</span>
-            <span style={{fontWeight:700,color:'#1E293B',fontSize:15}}>{TITLE[view]}</span>
+        <header style={{height:64,background:'rgba(255,255,255,.72)',backdropFilter:'saturate(180%) blur(24px)',WebkitBackdropFilter:'saturate(180%) blur(24px)',borderBottom:'1px solid rgba(0,0,0,.07)',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 24px',flexShrink:0}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,fontSize:14,color:'#AEAEB2'}}>
+            <span style={{fontWeight:700,color:'#1C1C1E',fontSize:20,letterSpacing:'-0.02em'}}>{TITLE[view]}</span>
           </div>
-          <button onClick={()=>setModal(true)} style={{display:'flex',alignItems:'center',gap:7,background:'#3B82F6',color:'white',border:'none',borderRadius:10,padding:'10px 18px',fontSize:14,fontWeight:600,cursor:'pointer',boxShadow:'0 4px 12px -2px rgba(59,130,246,.45)'}}><IcPlus size={16}/>새 Task 등록</button>
+          <button onClick={()=>setModal(true)} className="ios-btn" style={{display:'flex',alignItems:'center',gap:6,background:'#007AFF',color:'white',border:'none',borderRadius:999,padding:'10px 18px',fontSize:14,fontWeight:600,cursor:'pointer',boxShadow:'0 6px 16px -3px rgba(0,122,255,.5)'}}><IcPlus size={16}/>새 Task 등록</button>
         </header>
 
         {/* ── Main ── */}
@@ -415,17 +433,17 @@ function App(){
                 const total=tasks.length, on=ongoing.length, re=resolved.length;
                 const rate=total?Math.round(re/total*100):0;
                 const items=[
-                  {label:'전체 Task',value:total,unit:'건',color:'#6366F1',bg:'#EEF2FF',pct:100},
-                  {label:'진행중',value:on,unit:'건',color:'#3B82F6',bg:'#EFF6FF',pct:total?Math.round(on/total*100):0},
-                  {label:'완료',value:re,unit:'건',color:'#10B981',bg:'#ECFDF5',pct:total?Math.round(re/total*100):0},
-                  {label:'완료율',value:rate,unit:'%',color:'#F59E0B',bg:'#FFFBEB',pct:rate},
+                  {label:'전체 Task',value:total,unit:'건',color:'#5856D6',bg:'#ECECFB',pct:100},
+                  {label:'진행중',value:on,unit:'건',color:'#007AFF',bg:'#EBF4FF',pct:total?Math.round(on/total*100):0},
+                  {label:'완료',value:re,unit:'건',color:'#34C759',bg:'#E7F9ED',pct:total?Math.round(re/total*100):0},
+                  {label:'완료율',value:rate,unit:'%',color:'#FF9500',bg:'#FFF6E6',pct:rate},
                 ];
                 return (
                   <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:16}}>
                     {items.map(({label,value,unit,color,bg,pct})=>(
                       <div key={label} style={{...card,padding:'20px 22px',display:'flex',flexDirection:'column',gap:11}}>
-                        <span style={{fontSize:13,fontWeight:600,color:'#94A3B8'}}>{label}</span>
-                        <div style={{display:'flex',alignItems:'flex-end',gap:5}}><span style={{fontSize:36,fontWeight:800,color,lineHeight:1,letterSpacing:-1}}>{value}</span><span style={{fontSize:13,fontWeight:600,color:'#94A3B8',paddingBottom:4}}>{unit}</span></div>
+                        <span style={{fontSize:13,fontWeight:600,color:'#AEAEB2'}}>{label}</span>
+                        <div style={{display:'flex',alignItems:'flex-end',gap:5}}><span style={{fontSize:36,fontWeight:800,color,lineHeight:1,letterSpacing:-1}}>{value}</span><span style={{fontSize:13,fontWeight:600,color:'#AEAEB2',paddingBottom:4}}>{unit}</span></div>
                         <div style={{height:6,borderRadius:3,background:bg,overflow:'hidden'}}><div style={{height:'100%',background:`linear-gradient(90deg,${color}cc,${color})`,borderRadius:3,width:`${pct}%`,transition:'width .6s'}}/></div>
                       </div>
                     ))}
@@ -437,57 +455,57 @@ function App(){
               <div style={{...card,padding:0,overflow:'hidden'}}>
                 <div onClick={()=>setLeadDrill(v=>!v)} className="row-item" style={{padding:'20px 24px',display:'flex',alignItems:'center',gap:24,cursor:'pointer',flexWrap:'wrap'}}>
                   <div style={{display:'flex',flexDirection:'column',gap:6,minWidth:190}}>
-                    <span style={{display:'flex',alignItems:'center',gap:7,fontSize:13,fontWeight:700,color:'#1E293B'}}><IcClock size={16} style={{color:'#F59E0B'}}/>전체 평균 리드타임</span>
-                    <span style={{fontSize:11,color:'#94A3B8'}}>완료된 task의 등록→완료 평균 소요</span>
+                    <span style={{display:'flex',alignItems:'center',gap:7,fontSize:13,fontWeight:700,color:'#1C1C1E'}}><IcClock size={16} style={{color:'#FF9500'}}/>전체 평균 리드타임</span>
+                    <span style={{fontSize:11,color:'#AEAEB2'}}>완료된 task의 등록→완료 평균 소요</span>
                   </div>
-                  <div style={{display:'flex',alignItems:'flex-end',gap:5}}><span style={{fontSize:38,fontWeight:800,color:'#F59E0B',lineHeight:1,letterSpacing:-1}}>{analytics.avgLead??'–'}</span><span style={{fontSize:14,fontWeight:600,color:'#94A3B8',paddingBottom:5}}>일</span></div>
+                  <div style={{display:'flex',alignItems:'flex-end',gap:5}}><span style={{fontSize:38,fontWeight:800,color:'#FF9500',lineHeight:1,letterSpacing:-1}}>{analytics.avgLead??'–'}</span><span style={{fontSize:14,fontWeight:600,color:'#AEAEB2',paddingBottom:5}}>일</span></div>
                   <div style={{display:'flex',gap:22,marginLeft:8,flexWrap:'wrap'}}>
-                    {[['완료 건수',analytics.leads.length+'건','#10B981'],['최단',(analytics.minLead??'–')+'일','#3B82F6'],['최장',(analytics.maxLead??'–')+'일','#EF4444'],['진행중 평균경과',(analytics.avgOngElapsed??'–')+'일','#64748B']].map(([l,v,c])=>(
-                      <div key={l} style={{display:'flex',flexDirection:'column',gap:3}}><span style={{fontSize:11,color:'#94A3B8'}}>{l}</span><span style={{fontSize:16,fontWeight:700,color:c}}>{v}</span></div>
+                    {[['완료 건수',analytics.leads.length+'건','#34C759'],['최단',(analytics.minLead??'–')+'일','#007AFF'],['최장',(analytics.maxLead??'–')+'일','#FF3B30'],['진행중 평균경과',(analytics.avgOngElapsed??'–')+'일','#8E8E93']].map(([l,v,c])=>(
+                      <div key={l} style={{display:'flex',flexDirection:'column',gap:3}}><span style={{fontSize:11,color:'#AEAEB2'}}>{l}</span><span style={{fontSize:16,fontWeight:700,color:c}}>{v}</span></div>
                     ))}
                   </div>
-                  <span style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:5,fontSize:12,fontWeight:600,color:'#3B82F6'}}>담당자별 보기<IcChevD size={14} style={{transform:leadDrill?'rotate(180deg)':'none',transition:'transform .2s'}}/></span>
+                  <span style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:5,fontSize:12,fontWeight:600,color:'#007AFF'}}>담당자별 보기<IcChevD size={14} style={{transform:leadDrill?'rotate(180deg)':'none',transition:'transform .2s'}}/></span>
                 </div>
                 {leadDrill&&(
-                  <div style={{borderTop:'1px solid #F1F5F9'}}>
-                    <div style={{display:'grid',gridTemplateColumns:'1.4fr 90px 110px 90px 90px 110px 40px',background:'#F8FAFC',borderBottom:'2px solid #E2E8F0',padding:'10px 22px',alignItems:'center'}}>
+                  <div style={{borderTop:'1px solid #F2F2F7'}}>
+                    <div style={{display:'grid',gridTemplateColumns:'1.4fr 90px 110px 90px 90px 110px 40px',background:'#F9F9FB',borderBottom:'2px solid #E5E5EA',padding:'10px 22px',alignItems:'center'}}>
                       {['담당자','완료 건수','평균 리드타임','최단','최장','전체대비',''].map((h,i)=>(
-                        <span key={i} onClick={()=>i===2&&setLeadSort(s=>s==='desc'?'asc':'desc')} style={{fontSize:11,fontWeight:700,color:i===2?'#3B82F6':'#64748B',cursor:i===2?'pointer':'default'}}>{h}{i===2&&(leadSort==='desc'?' ▼':' ▲')}</span>
+                        <span key={i} onClick={()=>i===2&&setLeadSort(s=>s==='desc'?'asc':'desc')} style={{fontSize:11,fontWeight:700,color:i===2?'#007AFF':'#8E8E93',cursor:i===2?'pointer':'default'}}>{h}{i===2&&(leadSort==='desc'?' ▼':' ▲')}</span>
                       ))}
                     </div>
                     {leadByAssignee.map(r=>(
                       <React.Fragment key={r.name}>
-                        <div onClick={()=>r.count&&setLeadExpand(v=>v===r.name?null:r.name)} className="row-item" style={{display:'grid',gridTemplateColumns:'1.4fr 90px 110px 90px 90px 110px 40px',padding:'11px 22px',borderBottom:'1px solid #F1F5F9',alignItems:'center',cursor:r.count?'pointer':'default'}}>
-                          <span style={{fontSize:14,fontWeight:600,color:'#334155'}}>{r.name}</span>
+                        <div onClick={()=>r.count&&setLeadExpand(v=>v===r.name?null:r.name)} className="row-item" style={{display:'grid',gridTemplateColumns:'1.4fr 90px 110px 90px 90px 110px 40px',padding:'11px 22px',borderBottom:'1px solid #F2F2F7',alignItems:'center',cursor:r.count?'pointer':'default'}}>
+                          <span style={{fontSize:14,fontWeight:600,color:'#3A3A3C'}}>{r.name}</span>
                           {r.count===0
-                            ? <span style={{gridColumn:'2 / 8',fontSize:12,color:'#CBD5E1'}}>데이터 없음</span>
+                            ? <span style={{gridColumn:'2 / 8',fontSize:12,color:'#C7C7CC'}}>데이터 없음</span>
                             : <>
-                                <span style={{fontSize:13,color:'#334155'}}>{r.count}건</span>
-                                <span style={{fontSize:15,fontWeight:800,color:'#F59E0B'}}>{r.avg}일</span>
-                                <span style={{fontSize:13,color:'#3B82F6'}}>{r.min}일</span>
-                                <span style={{fontSize:13,color:'#EF4444'}}>{r.max}일</span>
-                                {(()=>{const d=analytics.avgLead!=null?round1(r.avg-analytics.avgLead):0; const slow=d>0; return <span style={{fontSize:13,fontWeight:700,color:d===0?'#94A3B8':slow?'#EF4444':'#10B981'}}>{d>0?'+':''}{d}일</span>;})()}
-                                <IcChevD size={14} style={{color:'#CBD5E1',transform:leadExpand===r.name?'rotate(180deg)':'none',transition:'transform .2s'}}/>
+                                <span style={{fontSize:13,color:'#3A3A3C'}}>{r.count}건</span>
+                                <span style={{fontSize:15,fontWeight:800,color:'#FF9500'}}>{r.avg}일</span>
+                                <span style={{fontSize:13,color:'#007AFF'}}>{r.min}일</span>
+                                <span style={{fontSize:13,color:'#FF3B30'}}>{r.max}일</span>
+                                {(()=>{const d=analytics.avgLead!=null?round1(r.avg-analytics.avgLead):0; const slow=d>0; return <span style={{fontSize:13,fontWeight:700,color:d===0?'#AEAEB2':slow?'#FF3B30':'#34C759'}}>{d>0?'+':''}{d}일</span>;})()}
+                                <IcChevD size={14} style={{color:'#C7C7CC',transform:leadExpand===r.name?'rotate(180deg)':'none',transition:'transform .2s'}}/>
                               </>}
                         </div>
                         {leadExpand===r.name&&r.items.map(l=>(
-                          <div key={l.t.id} style={{display:'grid',gridTemplateColumns:'1.4fr 1fr 1fr 1fr',padding:'8px 22px 8px 40px',borderBottom:'1px solid #F8FAFC',background:'#FBFCFE',alignItems:'center'}}>
-                            <span style={{fontSize:12,color:'#475569',fontWeight:600}}>{l.t.storeName} <span style={{color:'#CBD5E1',fontWeight:400}}>#{l.t.storeId}</span></span>
-                            <span style={{fontSize:11,color:'#94A3B8'}}>소싱 {l.t.sourcingDate}</span>
-                            <span style={{fontSize:11,color:'#94A3B8'}}>완료 {fmt(new Date(l.t.resolvedAt))}</span>
-                            <span style={{fontSize:12,fontWeight:700,color:'#F59E0B'}}>{round1(l.lead)}일</span>
+                          <div key={l.t.id} style={{display:'grid',gridTemplateColumns:'1.4fr 1fr 1fr 1fr',padding:'8px 22px 8px 40px',borderBottom:'1px solid #F9F9FB',background:'#FBFBFD',alignItems:'center'}}>
+                            <span style={{fontSize:12,color:'#48484A',fontWeight:600}}>{l.t.storeName} <span style={{color:'#C7C7CC',fontWeight:400}}>#{l.t.storeId}</span></span>
+                            <span style={{fontSize:11,color:'#AEAEB2'}}>소싱 {l.t.sourcingDate}</span>
+                            <span style={{fontSize:11,color:'#AEAEB2'}}>완료 {fmt(new Date(l.t.resolvedAt))}</span>
+                            <span style={{fontSize:12,fontWeight:700,color:'#FF9500'}}>{round1(l.lead)}일</span>
                           </div>
                         ))}
                       </React.Fragment>
                     ))}
-                    {leadByAssignee.length===0&&<div style={{padding:'24px',textAlign:'center',color:'#CBD5E1',fontSize:13}}>완료된 task가 없습니다</div>}
+                    {leadByAssignee.length===0&&<div style={{padding:'24px',textAlign:'center',color:'#C7C7CC',fontSize:13}}>완료된 task가 없습니다</div>}
                   </div>
                 )}
               </div>
 
               {/* 단계별 갯수 현황 */}
               <div style={{...card,padding:'20px 24px'}}>
-                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:18,flexWrap:'wrap'}}><IcList size={17} style={{color:'#3B82F6'}}/><span style={{fontSize:15,fontWeight:700,color:'#1E293B'}}>단계별 현황 (현재 머문 task 수)</span><span style={{fontSize:12,color:'#94A3B8'}}>· 막대를 클릭하면 해당 단계 목록</span></div>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:18,flexWrap:'wrap'}}><IcList size={17} style={{color:'#007AFF'}}/><span style={{fontSize:15,fontWeight:700,color:'#1C1C1E'}}>단계별 현황 (현재 머문 task 수)</span><span style={{fontSize:12,color:'#AEAEB2'}}>· 막대를 클릭하면 해당 단계 목록</span></div>
                 <div style={{display:'flex',alignItems:'flex-end',gap:10,height:180}}>
                   {analytics.stageCounts.map((c,i)=>{
                     const max=Math.max(1,...analytics.stageCounts);
@@ -495,28 +513,28 @@ function App(){
                     const active=stageDrill===i+1;
                     return (
                       <div key={i} onClick={()=>setStageDrill(active?null:i+1)} className="bar" style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:8,justifyContent:'flex-end'}}>
-                        <span style={{fontSize:15,fontWeight:800,color:c?'#3B82F6':'#CBD5E1'}}>{c}</span>
-                        <div style={{width:'100%',height:h,borderRadius:'7px 7px 0 0',background:active?'linear-gradient(180deg,#1D4ED8,#3B82F6)':c?'linear-gradient(180deg,#60A5FA,#3B82F6)':'#E2E8F0',boxShadow:active?'0 0 0 2px #BFDBFE':'none'}}/>
-                        <span style={{fontSize:11,fontWeight:600,color:active?'#3B82F6':'#64748B',textAlign:'center',lineHeight:1.2}}>{i+1}.{STAGE_SHORT[i]}</span>
+                        <span style={{fontSize:15,fontWeight:800,color:c?'#007AFF':'#C7C7CC'}}>{c}</span>
+                        <div style={{width:'100%',height:h,borderRadius:'7px 7px 0 0',background:active?'linear-gradient(180deg,#0051D5,#007AFF)':c?'linear-gradient(180deg,#409CFF,#007AFF)':'#E5E5EA',boxShadow:active?'0 0 0 2px #CCE4FF':'none'}}/>
+                        <span style={{fontSize:11,fontWeight:600,color:active?'#007AFF':'#8E8E93',textAlign:'center',lineHeight:1.2}}>{i+1}.{STAGE_SHORT[i]}</span>
                       </div>
                     );
                   })}
                 </div>
                 {stageDrill&&(
-                  <div style={{marginTop:16,borderTop:'1px solid #F1F5F9',paddingTop:12}}>
-                    <div style={{fontSize:13,fontWeight:700,color:'#1E293B',marginBottom:8}}>{stageDrill}단계 · {STAGE_TITLES[stageDrill-1]} 에 머문 task</div>
+                  <div style={{marginTop:16,borderTop:'1px solid #F2F2F7',paddingTop:12}}>
+                    <div style={{fontSize:13,fontWeight:700,color:'#1C1C1E',marginBottom:8}}>{stageDrill}단계 · {STAGE_TITLES[stageDrill-1]} 에 머문 task</div>
                     {ongoing.filter(t=>currentStage(t)===stageDrill).map(t=>{
                       const e=t.stages['s'+stageDrill].enteredAt;
                       return (
                         <div key={t.id} onClick={()=>{setView('ongoing');setSelId(t.id);}} className="row-item" style={{display:'flex',alignItems:'center',gap:14,padding:'9px 12px',borderRadius:9,cursor:'pointer',flexWrap:'wrap'}}>
-                          <span style={{fontSize:13,fontWeight:700,color:'#334155',minWidth:140}}>{t.storeName} <span style={{color:'#CBD5E1',fontWeight:400}}>#{t.storeId}</span></span>
-                          <span style={{fontSize:12,color:'#64748B',minWidth:80}}>{t.assignee}</span>
-                          <span style={{fontSize:12,color:'#94A3B8'}}>소싱 {t.sourcingDate}</span>
-                          <span style={{marginLeft:'auto',fontSize:12,fontWeight:700,color:'#F59E0B'}}>체류 {e?Math.round((now-new Date(e))/86400000):0}일</span>
+                          <span style={{fontSize:13,fontWeight:700,color:'#3A3A3C',minWidth:140}}>{t.storeName} <span style={{color:'#C7C7CC',fontWeight:400}}>#{t.storeId}</span></span>
+                          <span style={{fontSize:12,color:'#8E8E93',minWidth:80}}>{t.assignee}</span>
+                          <span style={{fontSize:12,color:'#AEAEB2'}}>소싱 {t.sourcingDate}</span>
+                          <span style={{marginLeft:'auto',fontSize:12,fontWeight:700,color:'#FF9500'}}>체류 {e?Math.round((now-new Date(e))/86400000):0}일</span>
                         </div>
                       );
                     })}
-                    {ongoing.filter(t=>currentStage(t)===stageDrill).length===0&&<div style={{padding:'8px 12px',color:'#CBD5E1',fontSize:12}}>해당 단계 task 없음</div>}
+                    {ongoing.filter(t=>currentStage(t)===stageDrill).length===0&&<div style={{padding:'8px 12px',color:'#C7C7CC',fontSize:12}}>해당 단계 task 없음</div>}
                   </div>
                 )}
               </div>
@@ -524,19 +542,19 @@ function App(){
               {/* 단계별 평균 체류일 + 퍼널 */}
               <div style={{display:'grid',gridTemplateColumns:'1.3fr 1fr',gap:18}}>
                 <div style={{...card,padding:'20px 24px'}}>
-                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16}}><IcClock size={17} style={{color:'#F59E0B'}}/><span style={{fontSize:15,fontWeight:700,color:'#1E293B'}}>단계별 평균 체류일 (병목 진단)</span></div>
-                  <div style={{display:'flex',gap:14,marginBottom:12,fontSize:11,color:'#64748B'}}>
-                    <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{width:10,height:10,borderRadius:3,background:'#10B981'}}/>완료 단계 평균</span>
-                    <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{width:10,height:10,borderRadius:3,background:'#F59E0B'}}/>진행중(현재 단계) 평균</span>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16}}><IcClock size={17} style={{color:'#FF9500'}}/><span style={{fontSize:15,fontWeight:700,color:'#1C1C1E'}}>단계별 평균 체류일 (병목 진단)</span></div>
+                  <div style={{display:'flex',gap:14,marginBottom:12,fontSize:11,color:'#8E8E93'}}>
+                    <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{width:10,height:10,borderRadius:3,background:'#34C759'}}/>완료 단계 평균</span>
+                    <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{width:10,height:10,borderRadius:3,background:'#FF9500'}}/>진행중(현재 단계) 평균</span>
                   </div>
                   {analytics.stageDwell.map((d,i)=>{
                     const maxV=Math.max(1,...analytics.stageDwell.flatMap(x=>[x.completed||0,x.ongoing||0]));
                     return (
                       <div key={i} style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
-                        <span style={{fontSize:12,fontWeight:600,color:'#64748B',width:78,flexShrink:0}}>{i+1}.{STAGE_SHORT[i]}</span>
+                        <span style={{fontSize:12,fontWeight:600,color:'#8E8E93',width:78,flexShrink:0}}>{i+1}.{STAGE_SHORT[i]}</span>
                         <div style={{flex:1,display:'flex',flexDirection:'column',gap:3}}>
-                          <div style={{display:'flex',alignItems:'center',gap:6}}><div style={{height:9,borderRadius:5,background:'#10B981',width:`${(d.completed||0)/maxV*100}%`,minWidth:d.completed?3:0}}/><span style={{fontSize:11,color:'#10B981',fontWeight:700}}>{d.completed!=null?d.completed+'일':'–'}{d.cCount?` (${d.cCount})`:''}</span></div>
-                          <div style={{display:'flex',alignItems:'center',gap:6}}><div style={{height:9,borderRadius:5,background:'#F59E0B',width:`${(d.ongoing||0)/maxV*100}%`,minWidth:d.ongoing?3:0}}/><span style={{fontSize:11,color:'#F59E0B',fontWeight:700}}>{d.ongoing!=null?d.ongoing+'일':'–'}{d.oCount?` (${d.oCount})`:''}</span></div>
+                          <div style={{display:'flex',alignItems:'center',gap:6}}><div style={{height:9,borderRadius:5,background:'#34C759',width:`${(d.completed||0)/maxV*100}%`,minWidth:d.completed?3:0}}/><span style={{fontSize:11,color:'#34C759',fontWeight:700}}>{d.completed!=null?d.completed+'일':'–'}{d.cCount?` (${d.cCount})`:''}</span></div>
+                          <div style={{display:'flex',alignItems:'center',gap:6}}><div style={{height:9,borderRadius:5,background:'#FF9500',width:`${(d.ongoing||0)/maxV*100}%`,minWidth:d.ongoing?3:0}}/><span style={{fontSize:11,color:'#FF9500',fontWeight:700}}>{d.ongoing!=null?d.ongoing+'일':'–'}{d.oCount?` (${d.oCount})`:''}</span></div>
                         </div>
                       </div>
                     );
@@ -544,13 +562,13 @@ function App(){
                 </div>
 
                 <div style={{...card,padding:'20px 24px'}}>
-                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16}}><IcFunnel size={16} style={{color:'#8B5CF6'}}/><span style={{fontSize:15,fontWeight:700,color:'#1E293B'}}>퍼널 (단계 통과율)</span></div>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16}}><IcFunnel size={16} style={{color:'#AF52DE'}}/><span style={{fontSize:15,fontWeight:700,color:'#1C1C1E'}}>퍼널 (단계 통과율)</span></div>
                   {analytics.reached.map((c,i)=>{
                     const pct=analytics.total?Math.round(c/analytics.total*100):0;
                     return (
                       <div key={i} style={{marginBottom:9}}>
-                        <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}><span style={{fontSize:12,fontWeight:600,color:'#64748B'}}>{i+1}.{STAGE_SHORT[i]} 완료</span><span style={{fontSize:12,fontWeight:700,color:'#8B5CF6'}}>{c}건 · {pct}%</span></div>
-                        <div style={{height:8,borderRadius:4,background:'#F1F5F9',overflow:'hidden'}}><div style={{height:'100%',background:'linear-gradient(90deg,#A78BFA,#8B5CF6)',borderRadius:4,width:`${pct}%`,transition:'width .5s'}}/></div>
+                        <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}><span style={{fontSize:12,fontWeight:600,color:'#8E8E93'}}>{i+1}.{STAGE_SHORT[i]} 완료</span><span style={{fontSize:12,fontWeight:700,color:'#AF52DE'}}>{c}건 · {pct}%</span></div>
+                        <div style={{height:8,borderRadius:4,background:'#F2F2F7',overflow:'hidden'}}><div style={{height:'100%',background:'linear-gradient(90deg,#C77DFF,#AF52DE)',borderRadius:4,width:`${pct}%`,transition:'width .5s'}}/></div>
                       </div>
                     );
                   })}
@@ -559,19 +577,19 @@ function App(){
 
               {/* 담당자별 + 트렌드 */}
               <div style={{...card,padding:0,overflow:'hidden'}}>
-                <div style={{display:'flex',alignItems:'center',gap:8,padding:'18px 24px 14px'}}><IcUsers size={17} style={{color:'#3B82F6'}}/><span style={{fontSize:15,fontWeight:700,color:'#1E293B'}}>담당자별 현황</span></div>
-                <div style={{display:'grid',gridTemplateColumns:'1.5fr 1fr 1fr 1fr',background:'#F8FAFC',borderTop:'1px solid #EAEDF4',borderBottom:'2px solid #E2E8F0',padding:'10px 24px'}}>
-                  {['담당자','진행중','완료','합계'].map(h=><span key={h} style={{fontSize:11,fontWeight:700,color:'#64748B'}}>{h}</span>)}
+                <div style={{display:'flex',alignItems:'center',gap:8,padding:'18px 24px 14px'}}><IcUsers size={17} style={{color:'#007AFF'}}/><span style={{fontSize:15,fontWeight:700,color:'#1C1C1E'}}>담당자별 현황</span></div>
+                <div style={{display:'grid',gridTemplateColumns:'1.5fr 1fr 1fr 1fr',background:'#F9F9FB',borderTop:'1px solid #E5E5EA',borderBottom:'2px solid #E5E5EA',padding:'10px 24px'}}>
+                  {['담당자','진행중','완료','합계'].map(h=><span key={h} style={{fontSize:11,fontWeight:700,color:'#8E8E93'}}>{h}</span>)}
                 </div>
                 {assignees.map(a=>{
                   const on=ongoing.filter(t=>t.assignee===a.name).length;
                   const re=resolved.filter(t=>t.assignee===a.name).length;
                   return (
-                    <div key={a.id} className="row-item" style={{display:'grid',gridTemplateColumns:'1.5fr 1fr 1fr 1fr',padding:'11px 24px',borderBottom:'1px solid #F1F5F9',alignItems:'center'}}>
-                      <span style={{fontSize:14,fontWeight:600,color:'#334155'}}>{a.name}</span>
-                      <span style={{fontSize:14,fontWeight:700,color:on?'#3B82F6':'#CBD5E1'}}>{on}</span>
-                      <span style={{fontSize:14,fontWeight:700,color:re?'#10B981':'#CBD5E1'}}>{re}</span>
-                      <span style={{fontSize:14,fontWeight:800,color:'#1E293B'}}>{on+re}</span>
+                    <div key={a.id} className="row-item" style={{display:'grid',gridTemplateColumns:'1.5fr 1fr 1fr 1fr',padding:'11px 24px',borderBottom:'1px solid #F2F2F7',alignItems:'center'}}>
+                      <span style={{fontSize:14,fontWeight:600,color:'#3A3A3C'}}>{a.name}</span>
+                      <span style={{fontSize:14,fontWeight:700,color:on?'#007AFF':'#C7C7CC'}}>{on}</span>
+                      <span style={{fontSize:14,fontWeight:700,color:re?'#34C759':'#C7C7CC'}}>{re}</span>
+                      <span style={{fontSize:14,fontWeight:800,color:'#1C1C1E'}}>{on+re}</span>
                     </div>
                   );
                 })}
@@ -579,12 +597,12 @@ function App(){
 
               <div style={{...card,padding:'20px 24px'}}>
                 <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16,flexWrap:'wrap',gap:10}}>
-                  <div style={{display:'flex',alignItems:'center',gap:8}}><IcTrend size={17} style={{color:'#10B981'}}/><span style={{fontSize:15,fontWeight:700,color:'#1E293B'}}>등록 · 완료 추이</span></div>
+                  <div style={{display:'flex',alignItems:'center',gap:8}}><IcTrend size={17} style={{color:'#34C759'}}/><span style={{fontSize:15,fontWeight:700,color:'#1C1C1E'}}>등록 · 완료 추이</span></div>
                   <Seg value={trendMode} onChange={setTrendMode} options={[['week','주간'],['month','월간']]}/>
                 </div>
-                <div style={{display:'flex',gap:18,marginBottom:8,fontSize:12,color:'#64748B'}}>
-                  <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:14,height:3,borderRadius:2,background:'#3B82F6'}}/>등록(소싱일)</span>
-                  <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:14,height:3,borderRadius:2,background:'#10B981'}}/>완료</span>
+                <div style={{display:'flex',gap:18,marginBottom:8,fontSize:12,color:'#8E8E93'}}>
+                  <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:14,height:3,borderRadius:2,background:'#007AFF'}}/>등록(소싱일)</span>
+                  <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:14,height:3,borderRadius:2,background:'#34C759'}}/>완료</span>
                 </div>
                 <LineChart buckets={trend}/>
               </div>
@@ -594,33 +612,33 @@ function App(){
           {view==='ongoing' && (
             <div style={{display:'flex',flexDirection:'column',gap:14}}>
               <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
-                <div style={{display:'flex',alignItems:'center',gap:8,background:'white',border:'1px solid #E2E8F0',borderRadius:10,padding:'9px 13px',boxShadow:'0 1px 2px rgba(16,24,40,.04)'}}>
-                  <IcSearch size={15} style={{color:'#94A3B8'}}/>
-                  <input value={q} onChange={e=>setQ(e.target.value)} placeholder="상호 / 스토어ID 검색" style={{border:'none',outline:'none',fontSize:13,width:180,background:'none'}}/>
+                <div style={{display:'flex',alignItems:'center',gap:8,background:'rgba(120,120,128,.12)',border:'none',borderRadius:11,padding:'10px 14px'}}>
+                  <IcSearch size={15} style={{color:'#8E8E93'}}/>
+                  <input value={q} onChange={e=>setQ(e.target.value)} placeholder="상호 / 스토어ID 검색" style={{border:'none',outline:'none',fontSize:14,width:180,background:'none',boxShadow:'none'}}/>
                 </div>
-                <select value={fA} onChange={e=>setFA(e.target.value)} className="selbtn" style={{fontSize:13,fontWeight:500,border:'1px solid #E2E8F0',borderRadius:10,padding:'10px 16px',color:'#475569',cursor:'pointer',background:'white'}}>
+                <select value={fA} onChange={e=>setFA(e.target.value)} className="selbtn" style={{fontSize:14,fontWeight:500,border:'none',borderRadius:11,padding:'11px 16px',color:'#1C1C1E',cursor:'pointer',background:'rgba(120,120,128,.12)'}}>
                   <option value="">전체 담당자</option>{assignees.map(a=><option key={a.id}>{a.name}</option>)}
                 </select>
-                <select value={sortKey} onChange={e=>setSortKey(e.target.value)} className="selbtn" style={{fontSize:13,fontWeight:500,border:'1px solid #E2E8F0',borderRadius:10,padding:'10px 16px',color:'#475569',cursor:'pointer',background:'white'}}>
+                <select value={sortKey} onChange={e=>setSortKey(e.target.value)} className="selbtn" style={{fontSize:14,fontWeight:500,border:'none',borderRadius:11,padding:'11px 16px',color:'#1C1C1E',cursor:'pointer',background:'rgba(120,120,128,.12)'}}>
                   <option value="dwell">현재단계 체류일 ↓</option><option value="elapsed">경과일 ↓</option><option value="sourcing">소싱일 ↓</option>
                 </select>
-                <span style={{fontSize:14,color:'#94A3B8',marginLeft:'auto'}}><b style={{color:'#334155'}}>{ongoingRows.length}</b>건</span>
+                <span style={{fontSize:14,color:'#AEAEB2',marginLeft:'auto'}}><b style={{color:'#3A3A3C'}}>{ongoingRows.length}</b>건</span>
               </div>
               <div style={{...card,overflow:'hidden'}}>
-                <div style={{display:'grid',gridTemplateColumns:'1.4fr 90px 100px 110px 1.1fr 90px 110px',background:'#F8FAFC',borderBottom:'2px solid #E2E8F0',padding:'12px 18px'}}>
-                  {['상호','스토어ID','담당자','소싱일','현재 단계','경과일','현재단계 체류일'].map(h=><span key={h} style={{fontSize:11,fontWeight:700,color:'#64748B'}}>{h}</span>)}
+                <div style={{display:'grid',gridTemplateColumns:'1.4fr 90px 100px 110px 1.1fr 90px 110px',background:'#F9F9FB',borderBottom:'2px solid #E5E5EA',padding:'12px 18px'}}>
+                  {['상호','스토어ID','담당자','소싱일','현재 단계','경과일','현재단계 체류일'].map(h=><span key={h} style={{fontSize:11,fontWeight:700,color:'#8E8E93'}}>{h}</span>)}
                 </div>
                 {ongoingRows.length===0
-                  ? <div style={{padding:'48px',textAlign:'center',color:'#CBD5E1',fontSize:13}}>진행중인 task가 없습니다</div>
+                  ? <div style={{padding:'48px',textAlign:'center',color:'#C7C7CC',fontSize:13}}>진행중인 task가 없습니다</div>
                   : ongoingRows.map(({t,cur,elapsed,dwell})=>(
-                    <div key={t.id} onClick={()=>setSelId(t.id)} className="row-item" style={{display:'grid',gridTemplateColumns:'1.4fr 90px 100px 110px 1.1fr 90px 110px',padding:'12px 18px',borderBottom:'1px solid #F1F5F9',alignItems:'center',cursor:'pointer',background:selId===t.id?'#EFF6FF':'white'}}>
-                      <span style={{fontSize:14,fontWeight:700,color:'#1E293B'}}>{t.storeName}</span>
-                      <span style={{fontSize:13,color:'#64748B'}}>{t.storeId}</span>
-                      <span style={{fontSize:13,color:'#334155'}}>{t.assignee}</span>
-                      <span style={{fontSize:12,color:'#94A3B8'}}>{t.sourcingDate}</span>
-                      <span><span style={{fontSize:11,fontWeight:700,padding:'3px 9px',borderRadius:999,background:'#FFFBEB',color:'#D97706'}}>{cur}. {STAGE_SHORT[cur-1]}</span></span>
-                      <span style={{fontSize:13,fontWeight:600,color:'#64748B'}}>{elapsed}일</span>
-                      <span style={{fontSize:14,fontWeight:800,color:dwell>=7?'#EF4444':dwell>=4?'#F59E0B':'#3B82F6'}}>{dwell}일</span>
+                    <div key={t.id} onClick={()=>setSelId(t.id)} className="row-item" style={{display:'grid',gridTemplateColumns:'1.4fr 90px 100px 110px 1.1fr 90px 110px',padding:'12px 18px',borderBottom:'1px solid #F2F2F7',alignItems:'center',cursor:'pointer',background:selId===t.id?'#EBF4FF':'white'}}>
+                      <span style={{fontSize:14,fontWeight:700,color:'#1C1C1E'}}>{t.storeName}</span>
+                      <span style={{fontSize:13,color:'#8E8E93'}}>{t.storeId}</span>
+                      <span style={{fontSize:13,color:'#3A3A3C'}}>{t.assignee}</span>
+                      <span style={{fontSize:12,color:'#AEAEB2'}}>{t.sourcingDate}</span>
+                      <span><span style={{fontSize:11,fontWeight:700,padding:'3px 9px',borderRadius:999,background:'#FFF6E6',color:'#C04E00'}}>{cur}. {STAGE_SHORT[cur-1]}</span></span>
+                      <span style={{fontSize:13,fontWeight:600,color:'#8E8E93'}}>{elapsed}일</span>
+                      <span style={{fontSize:14,fontWeight:800,color:dwell>=7?'#FF3B30':dwell>=4?'#FF9500':'#007AFF'}}>{dwell}일</span>
                     </div>
                   ))
                 }
@@ -630,27 +648,27 @@ function App(){
 
           {view==='resolved' && (
             <div style={{display:'flex',flexDirection:'column',gap:18}}>
-              {resolvedGroups.length===0&&<div style={{...card,padding:'48px',textAlign:'center',color:'#CBD5E1',fontSize:13}}>완료된 task가 없습니다</div>}
+              {resolvedGroups.length===0&&<div style={{...card,padding:'48px',textAlign:'center',color:'#C7C7CC',fontSize:13}}>완료된 task가 없습니다</div>}
               {resolvedGroups.map(g=>(
                 <div key={g.ym} style={{...card,overflow:'hidden'}}>
-                  <div style={{display:'flex',alignItems:'center',gap:12,padding:'14px 22px',borderBottom:'1px solid #F1F5F9',background:'#FBFCFE',flexWrap:'wrap'}}>
-                    <span style={{fontSize:15,fontWeight:800,color:'#1E293B'}}>{g.ym}</span>
-                    <span style={{fontSize:12,fontWeight:600,color:'#10B981',background:'#ECFDF5',borderRadius:999,padding:'3px 10px'}}>{g.items.length}건 완료</span>
-                    {g.avg!=null&&<span style={{fontSize:12,color:'#94A3B8'}}>평균 리드타임 <b style={{color:'#F59E0B'}}>{g.avg}일</b></span>}
+                  <div style={{display:'flex',alignItems:'center',gap:12,padding:'14px 22px',borderBottom:'1px solid #F2F2F7',background:'#FBFBFD',flexWrap:'wrap'}}>
+                    <span style={{fontSize:15,fontWeight:800,color:'#1C1C1E'}}>{g.ym}</span>
+                    <span style={{fontSize:12,fontWeight:600,color:'#34C759',background:'#E7F9ED',borderRadius:999,padding:'3px 10px'}}>{g.items.length}건 완료</span>
+                    {g.avg!=null&&<span style={{fontSize:12,color:'#AEAEB2'}}>평균 리드타임 <b style={{color:'#FF9500'}}>{g.avg}일</b></span>}
                   </div>
-                  <div style={{display:'grid',gridTemplateColumns:'1.4fr 90px 100px 110px 110px 90px',background:'#F8FAFC',borderBottom:'1px solid #E2E8F0',padding:'10px 22px'}}>
-                    {['상호','스토어ID','담당자','소싱일','완료일','리드타임'].map(h=><span key={h} style={{fontSize:11,fontWeight:700,color:'#64748B'}}>{h}</span>)}
+                  <div style={{display:'grid',gridTemplateColumns:'1.4fr 90px 100px 110px 110px 90px',background:'#F9F9FB',borderBottom:'1px solid #E5E5EA',padding:'10px 22px'}}>
+                    {['상호','스토어ID','담당자','소싱일','완료일','리드타임'].map(h=><span key={h} style={{fontSize:11,fontWeight:700,color:'#8E8E93'}}>{h}</span>)}
                   </div>
                   {g.items.map(t=>{
                     const lead=round1((new Date(t.resolvedAt)-new Date(t.createdAt))/86400000);
                     return (
-                      <div key={t.id} onClick={()=>setSelId(t.id)} className="row-item" style={{display:'grid',gridTemplateColumns:'1.4fr 90px 100px 110px 110px 90px',padding:'11px 22px',borderBottom:'1px solid #F1F5F9',alignItems:'center',cursor:'pointer',background:selId===t.id?'#EFF6FF':'white'}}>
-                        <span style={{fontSize:14,fontWeight:700,color:'#1E293B'}}>{t.storeName}</span>
-                        <span style={{fontSize:13,color:'#64748B'}}>{t.storeId}</span>
-                        <span style={{fontSize:13,color:'#334155'}}>{t.assignee}</span>
-                        <span style={{fontSize:12,color:'#94A3B8'}}>{t.sourcingDate}</span>
-                        <span style={{fontSize:12,color:'#94A3B8'}}>{fmt(new Date(t.resolvedAt))}</span>
-                        <span style={{fontSize:14,fontWeight:800,color:'#F59E0B'}}>{lead}일</span>
+                      <div key={t.id} onClick={()=>setSelId(t.id)} className="row-item" style={{display:'grid',gridTemplateColumns:'1.4fr 90px 100px 110px 110px 90px',padding:'11px 22px',borderBottom:'1px solid #F2F2F7',alignItems:'center',cursor:'pointer',background:selId===t.id?'#EBF4FF':'white'}}>
+                        <span style={{fontSize:14,fontWeight:700,color:'#1C1C1E'}}>{t.storeName}</span>
+                        <span style={{fontSize:13,color:'#8E8E93'}}>{t.storeId}</span>
+                        <span style={{fontSize:13,color:'#3A3A3C'}}>{t.assignee}</span>
+                        <span style={{fontSize:12,color:'#AEAEB2'}}>{t.sourcingDate}</span>
+                        <span style={{fontSize:12,color:'#AEAEB2'}}>{fmt(new Date(t.resolvedAt))}</span>
+                        <span style={{fontSize:14,fontWeight:800,color:'#FF9500'}}>{lead}일</span>
                       </div>
                     );
                   })}
@@ -661,25 +679,25 @@ function App(){
 
           {view==='setting' && (
             <div style={{maxWidth:760,display:'flex',flexDirection:'column',gap:18}}>
-              <div style={{...card,padding:'14px 18px',display:'flex',alignItems:'flex-start',gap:10,background:'#FFFBEB',border:'1px solid #FDE68A'}}>
-                <IcAlert size={17} style={{color:'#D97706',flexShrink:0,marginTop:1}}/>
-                <span style={{fontSize:12.5,lineHeight:1.6,color:'#92400E'}}>데이터는 이 브라우저·PC의 localStorage에만 저장됩니다. 다른 PC 이관이나 백업을 위해서는 <b>JSON Export</b>가 유일한 방법이니 정기적으로 내보내 두세요.</span>
+              <div style={{...card,padding:'14px 18px',display:'flex',alignItems:'flex-start',gap:10,background:'#FFF6E6',border:'1px solid #FFE2A8'}}>
+                <IcAlert size={17} style={{color:'#C04E00',flexShrink:0,marginTop:1}}/>
+                <span style={{fontSize:12.5,lineHeight:1.6,color:'#7A4D00'}}>데이터는 이 브라우저·PC의 localStorage에만 저장됩니다. 다른 PC 이관이나 백업을 위해서는 <b>JSON Export</b>가 유일한 방법이니 정기적으로 내보내 두세요.</span>
               </div>
 
               {/* 담당자 관리 */}
               <div style={{...card,padding:24}}>
-                <div style={{display:'flex',alignItems:'center',gap:8,fontWeight:700,color:'#1E293B',marginBottom:18,fontSize:15}}><IcUsers size={18} style={{color:'#3B82F6'}}/>담당자 관리</div>
+                <div style={{display:'flex',alignItems:'center',gap:8,fontWeight:700,color:'#1C1C1E',marginBottom:18,fontSize:15}}><IcUsers size={18} style={{color:'#007AFF'}}/>담당자 관리</div>
                 <AssigneeManager assignees={assignees} tasks={tasks} onAdd={addAssignee} onUpd={updAssignee} onDel={delAssignee}/>
               </div>
 
               {/* 데이터 */}
               <div style={{...card,padding:24}}>
-                <div style={{display:'flex',alignItems:'center',gap:8,fontWeight:700,color:'#1E293B',marginBottom:18,fontSize:15}}><IcArchive size={18} style={{color:'#10B981'}}/>데이터 백업 / 관리</div>
+                <div style={{display:'flex',alignItems:'center',gap:8,fontWeight:700,color:'#1C1C1E',marginBottom:18,fontSize:15}}><IcArchive size={18} style={{color:'#34C759'}}/>데이터 백업 / 관리</div>
                 <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
-                  <button onClick={exportJSON} style={{display:'flex',alignItems:'center',gap:7,padding:'11px 18px',borderRadius:10,border:'1px solid #A7F3D0',background:'#ECFDF5',color:'#047857',fontSize:14,fontWeight:600,cursor:'pointer'}}><IcDownload size={15}/>JSON Export</button>
-                  <button onClick={()=>importRef.current.click()} style={{display:'flex',alignItems:'center',gap:7,padding:'11px 18px',borderRadius:10,border:'1px solid #BFDBFE',background:'#EFF6FF',color:'#1D4ED8',fontSize:14,fontWeight:600,cursor:'pointer'}}><IcUpload size={15}/>JSON Import</button>
+                  <button onClick={exportJSON} className="ios-btn" style={{display:'flex',alignItems:'center',gap:7,padding:'11px 20px',borderRadius:999,border:'none',background:'#E7F9ED',color:'#248A3D',fontSize:14,fontWeight:600,cursor:'pointer'}}><IcDownload size={15}/>JSON Export</button>
+                  <button onClick={()=>importRef.current.click()} className="ios-btn" style={{display:'flex',alignItems:'center',gap:7,padding:'11px 20px',borderRadius:999,border:'none',background:'#EBF4FF',color:'#0051D5',fontSize:14,fontWeight:600,cursor:'pointer'}}><IcUpload size={15}/>JSON Import</button>
                   <input ref={importRef} type="file" accept="application/json" onChange={importJSON} style={{display:'none'}}/>
-                  <button onClick={resetAll} style={{display:'flex',alignItems:'center',gap:7,padding:'11px 18px',borderRadius:10,border:'1px solid #FECACA',background:'#FEF2F2',color:'#EF4444',fontSize:14,fontWeight:600,cursor:'pointer',marginLeft:'auto'}}><IcTrash size={15}/>전체 초기화</button>
+                  <button onClick={resetAll} className="ios-btn" style={{display:'flex',alignItems:'center',gap:7,padding:'11px 20px',borderRadius:999,border:'none',background:'#FFECEB',color:'#FF3B30',fontSize:14,fontWeight:600,cursor:'pointer',marginLeft:'auto'}}><IcTrash size={15}/>전체 초기화</button>
                 </div>
               </div>
             </div>
@@ -696,22 +714,22 @@ function App(){
 
       {/* ── Confirm modal ── */}
       {confirm&&(
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:10000,padding:16}}>
-          <div style={{background:'white',borderRadius:18,boxShadow:'0 24px 64px rgba(0,0,0,.25)',width:'100%',maxWidth:400,padding:24}}>
-            <div style={{display:'flex',alignItems:'flex-start',gap:12,marginBottom:20}}>
-              <div style={{width:40,height:40,borderRadius:'50%',background:'#FEF2F2',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,color:'#EF4444'}}><IcAlert size={20}/></div>
-              <span style={{fontSize:14,lineHeight:1.6,color:'#334155',paddingTop:4}}>{confirm.msg}</span>
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.4)',backdropFilter:'blur(2px)',WebkitBackdropFilter:'blur(2px)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:10000,padding:16,animation:'fadeIn .2s ease'}}>
+          <div style={{background:'rgba(250,250,252,.96)',backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)',borderRadius:22,boxShadow:'0 24px 64px rgba(0,0,0,.3)',width:'100%',maxWidth:300,overflow:'hidden',animation:'popIn .25s cubic-bezier(.2,.9,.3,1.3)'}}>
+            <div style={{padding:'22px 20px 18px',textAlign:'center'}}>
+              <div style={{width:44,height:44,borderRadius:'50%',background:'#FFECEB',display:'flex',alignItems:'center',justifyContent:'center',color:'#FF3B30',margin:'0 auto 12px'}}><IcAlert size={22}/></div>
+              <span style={{fontSize:14,lineHeight:1.5,color:'#1C1C1E',fontWeight:500}}>{confirm.msg}</span>
             </div>
-            <div style={{display:'flex',gap:10}}>
-              <button onClick={()=>setConfirm(null)} style={{flex:1,padding:'11px 0',borderRadius:10,border:'1px solid #E2E8F0',background:'white',color:'#64748B',fontSize:14,fontWeight:600,cursor:'pointer'}}>취소</button>
-              <button onClick={()=>{confirm.onYes();setConfirm(null);}} style={{flex:1,padding:'11px 0',borderRadius:10,border:'none',background:'#EF4444',color:'white',fontSize:14,fontWeight:700,cursor:'pointer'}}>확인</button>
+            <div style={{display:'flex',borderTop:'1px solid rgba(0,0,0,.1)'}}>
+              <button onClick={()=>setConfirm(null)} style={{flex:1,padding:'13px 0',borderRight:'1px solid rgba(0,0,0,.1)',background:'transparent',border:'none',borderTop:'none',borderBottom:'none',color:'#007AFF',fontSize:16,fontWeight:500,cursor:'pointer'}}>취소</button>
+              <button onClick={()=>{confirm.onYes();setConfirm(null);}} style={{flex:1,padding:'13px 0',background:'transparent',border:'none',color:'#FF3B30',fontSize:16,fontWeight:700,cursor:'pointer'}}>확인</button>
             </div>
           </div>
         </div>
       )}
 
       {/* toast */}
-      {toast&&<div style={{position:'fixed',bottom:24,left:'50%',transform:'translateX(-50%)',background:'#0F172A',color:'white',padding:'12px 22px',borderRadius:12,fontSize:13,fontWeight:600,zIndex:10001,boxShadow:'0 12px 32px rgba(0,0,0,.3)'}}>{toast}</div>}
+      {toast&&<div style={{position:'fixed',bottom:28,left:'50%',transform:'translateX(-50%)',background:'rgba(28,28,30,.92)',backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)',color:'white',padding:'13px 24px',borderRadius:999,fontSize:14,fontWeight:600,zIndex:10001,boxShadow:'0 12px 32px rgba(0,0,0,.35)',animation:'toastUp .3s cubic-bezier(.2,.9,.3,1.2)'}}>{toast}</div>}
     </div>
   );
 }
@@ -723,23 +741,23 @@ function AssigneeManager({assignees,tasks,onAdd,onUpd,onDel}){
   return (
     <>
       <div style={{display:'flex',gap:10,marginBottom:16}}>
-        <input value={n} onChange={e=>setN(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'){onAdd(n);setN('');}}} placeholder="담당자 이름" style={{flex:1,border:'1px solid #E2E8F0',borderRadius:10,padding:'11px 14px',fontSize:14}}/>
-        <button onClick={()=>{onAdd(n);setN('');}} style={{display:'flex',alignItems:'center',gap:6,background:'#3B82F6',color:'white',border:'none',borderRadius:10,padding:'11px 20px',fontSize:14,fontWeight:600,cursor:'pointer'}}><IcPlus size={15}/>추가</button>
+        <input value={n} onChange={e=>setN(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'){onAdd(n);setN('');}}} placeholder="담당자 이름" style={{flex:1,border:'1px solid #E5E5EA',borderRadius:12,padding:'12px 14px',fontSize:15,background:'#fff',transition:'box-shadow .18s,border-color .18s'}}/>
+        <button onClick={()=>{onAdd(n);setN('');}} className="ios-btn" style={{display:'flex',alignItems:'center',gap:6,background:'#007AFF',color:'white',border:'none',borderRadius:999,padding:'12px 22px',fontSize:14,fontWeight:600,cursor:'pointer',boxShadow:'0 6px 16px -3px rgba(0,122,255,.5)'}}><IcPlus size={15}/>추가</button>
       </div>
       <div style={{display:'flex',flexDirection:'column',gap:8}}>
         {assignees.map(a=>{
           const on=tasks.filter(t=>t.assignee===a.name&&t.status==='ongoing').length;
           const re=tasks.filter(t=>t.assignee===a.name&&t.status==='resolved').length;
           return (
-            <div key={a.id} style={{display:'flex',alignItems:'center',gap:12,padding:'11px 14px',borderRadius:10,border:'1px solid #F1F5F9',background:'#FAFBFC'}}>
-              <span style={{width:10,height:10,borderRadius:'50%',background:'#3B82F6',flexShrink:0}}/>
+            <div key={a.id} style={{display:'flex',alignItems:'center',gap:12,padding:'11px 14px',borderRadius:10,border:'1px solid #F2F2F7',background:'#F9F9FB'}}>
+              <span style={{width:10,height:10,borderRadius:'50%',background:'#007AFF',flexShrink:0}}/>
               {edit===a.id
-                ? <input defaultValue={a.name} autoFocus onBlur={e=>{onUpd(a.id,e.target.value);setEdit(null);}} onKeyDown={e=>{if(e.key==='Enter'){onUpd(a.id,e.target.value);setEdit(null);}if(e.key==='Escape')setEdit(null);}} style={{flex:1,border:'1px solid #3B82F6',borderRadius:6,padding:'4px 8px',fontSize:13}}/>
-                : <span style={{flex:1,fontWeight:600,fontSize:14,color:'#334155'}}>{a.name}</span>}
-              <span style={{fontSize:12,color:'#94A3B8'}}>진행 {on} · 완료 {re}</span>
+                ? <input defaultValue={a.name} autoFocus onBlur={e=>{onUpd(a.id,e.target.value);setEdit(null);}} onKeyDown={e=>{if(e.key==='Enter'){onUpd(a.id,e.target.value);setEdit(null);}if(e.key==='Escape')setEdit(null);}} style={{flex:1,border:'1px solid #007AFF',borderRadius:6,padding:'4px 8px',fontSize:13}}/>
+                : <span style={{flex:1,fontWeight:600,fontSize:14,color:'#3A3A3C'}}>{a.name}</span>}
+              <span style={{fontSize:12,color:'#AEAEB2'}}>진행 {on} · 완료 {re}</span>
               <div style={{display:'flex',gap:2}}>
-                <button onClick={()=>setEdit(a.id)} style={{padding:6,borderRadius:6,border:'none',background:'none',color:'#94A3B8',cursor:'pointer',display:'flex'}}><IcEdit size={13}/></button>
-                <button onClick={()=>onDel(a)} style={{padding:6,borderRadius:6,border:'none',background:'none',color:'#94A3B8',cursor:'pointer',display:'flex'}}><IcTrash size={13}/></button>
+                <button onClick={()=>setEdit(a.id)} style={{padding:6,borderRadius:6,border:'none',background:'none',color:'#AEAEB2',cursor:'pointer',display:'flex'}}><IcEdit size={13}/></button>
+                <button onClick={()=>onDel(a)} style={{padding:6,borderRadius:6,border:'none',background:'none',color:'#AEAEB2',cursor:'pointer',display:'flex'}}><IcTrash size={13}/></button>
               </div>
             </div>
           );
@@ -759,28 +777,28 @@ function NewTaskModal({assignees,onClose,onAdd}){
     const stages=blankStages(); stages.s1.enteredAt=created;
     onAdd({id:uid(),storeId:f.storeId.trim(),storeName:f.storeName.trim(),sourcingDate:f.sourcingDate,assignee:f.assignee,openArea:null,status:'ongoing',createdAt:created,resolvedAt:null,stages});
   };
-  const L={display:'block',fontSize:12,fontWeight:700,color:'#475569',marginBottom:7};
-  const I=invalid=>({width:'100%',border:`1px solid ${invalid?'#FCA5A5':'#E2E8F0'}`,borderRadius:10,padding:'11px 13px',fontSize:14,background:'white'});
+  const L={display:'block',fontSize:13,fontWeight:600,color:'#8E8E93',marginBottom:7};
+  const I=invalid=>({width:'100%',border:`1px solid ${invalid?'#FF9D96':'#E5E5EA'}`,borderRadius:12,padding:'12px 14px',fontSize:15,background:'#fff',transition:'box-shadow .18s,border-color .18s'});
   return (
-    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9998,padding:16}}>
-      <div style={{background:'white',borderRadius:20,boxShadow:'0 24px 64px rgba(0,0,0,.2)',width:'100%',maxWidth:440}}>
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'18px 24px',borderBottom:'1px solid #F1F5F9'}}>
-          <span style={{fontSize:18,fontWeight:700,color:'#0F172A'}}>새 Task 등록</span>
-          <button onClick={onClose} style={{padding:6,borderRadius:8,border:'none',background:'none',cursor:'pointer',color:'#94A3B8',display:'flex'}}><IcX size={18}/></button>
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.4)',backdropFilter:'blur(2px)',WebkitBackdropFilter:'blur(2px)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9998,padding:16,animation:'fadeIn .2s ease'}}>
+      <div style={{background:'rgba(255,255,255,.98)',borderRadius:24,boxShadow:'0 24px 64px rgba(0,0,0,.25)',width:'100%',maxWidth:440,animation:'popIn .26s cubic-bezier(.2,.9,.3,1.2)'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'20px 24px 16px'}}>
+          <span style={{fontSize:20,fontWeight:700,color:'#1C1C1E',letterSpacing:'-0.02em'}}>새 Task 등록</span>
+          <button onClick={onClose} className="nbtn" style={{padding:7,borderRadius:999,border:'none',background:'rgba(120,120,128,.12)',cursor:'pointer',color:'#8E8E93',display:'flex'}}><IcX size={17}/></button>
         </div>
         <div style={{padding:'20px 24px',display:'flex',flexDirection:'column',gap:14}}>
-          <div><label style={L}>상호 <span style={{color:'#EF4444'}}>*</span></label><input value={f.storeName} onChange={e=>setF(v=>({...v,storeName:e.target.value}))} placeholder="예: 행복국밥" style={I(!f.storeName.trim())}/></div>
-          <div><label style={L}>스토어ID <span style={{color:'#EF4444'}}>*</span></label><input value={f.storeId} onChange={e=>setF(v=>({...v,storeId:e.target.value}))} placeholder="예: 10231" style={I(!f.storeId.trim())}/></div>
-          <div><label style={L}>소싱일 <span style={{color:'#EF4444'}}>*</span></label><input type="date" value={f.sourcingDate} onChange={e=>setF(v=>({...v,sourcingDate:e.target.value}))} style={I(!f.sourcingDate)}/></div>
-          <div><label style={L}>담당자 <span style={{color:'#EF4444'}}>*</span></label>
+          <div><label style={L}>상호 <span style={{color:'#FF3B30'}}>*</span></label><input value={f.storeName} onChange={e=>setF(v=>({...v,storeName:e.target.value}))} placeholder="예: 행복국밥" style={I(!f.storeName.trim())}/></div>
+          <div><label style={L}>스토어ID <span style={{color:'#FF3B30'}}>*</span></label><input value={f.storeId} onChange={e=>setF(v=>({...v,storeId:e.target.value}))} placeholder="예: 10231" style={I(!f.storeId.trim())}/></div>
+          <div><label style={L}>소싱일 <span style={{color:'#FF3B30'}}>*</span></label><input type="date" value={f.sourcingDate} onChange={e=>setF(v=>({...v,sourcingDate:e.target.value}))} style={I(!f.sourcingDate)}/></div>
+          <div><label style={L}>담당자 <span style={{color:'#FF3B30'}}>*</span></label>
             <select value={f.assignee} onChange={e=>setF(v=>({...v,assignee:e.target.value}))} style={I(!f.assignee)}>
               <option value="">선택</option>{assignees.map(a=><option key={a.id}>{a.name}</option>)}
             </select>
           </div>
         </div>
-        <div style={{padding:'0 24px 24px',display:'flex',gap:12}}>
-          <button onClick={onClose} style={{flex:1,padding:'13px 0',border:'1px solid #E2E8F0',borderRadius:12,fontSize:14,fontWeight:600,color:'#64748B',background:'white',cursor:'pointer'}}>취소</button>
-          <button onClick={submit} disabled={!ok} style={{flex:1,padding:'13px 0',border:'none',borderRadius:12,fontSize:14,fontWeight:700,color:'white',cursor:ok?'pointer':'not-allowed',background:ok?'#3B82F6':'#93C5FD',boxShadow:ok?'0 4px 14px -2px rgba(59,130,246,.45)':'none'}}>등록</button>
+        <div style={{padding:'4px 24px 24px',display:'flex',gap:12}}>
+          <button onClick={onClose} className="ios-btn" style={{flex:1,padding:'14px 0',border:'none',borderRadius:14,fontSize:16,fontWeight:600,color:'#007AFF',background:'rgba(120,120,128,.12)',cursor:'pointer'}}>취소</button>
+          <button onClick={submit} disabled={!ok} className="ios-btn" style={{flex:1,padding:'14px 0',border:'none',borderRadius:14,fontSize:16,fontWeight:700,color:'white',cursor:ok?'pointer':'not-allowed',background:ok?'#007AFF':'#99C9FF',boxShadow:ok?'0 6px 16px -3px rgba(0,122,255,.5)':'none'}}>등록</button>
         </div>
       </div>
     </div>
@@ -793,12 +811,12 @@ function StageSection({n,task,open,onToggle,children}){
   const cur=currentStage(task);
   const st = done?ST_DONE : (n===cur?ST_CUR:ST_TODO);
   return (
-    <div style={{border:'1px solid '+(n===cur&&!done?'#FDE68A':'#EAEDF4'),borderRadius:14,overflow:'hidden',background:'white'}}>
-      <div onClick={onToggle} style={{display:'flex',alignItems:'center',gap:10,padding:'12px 16px',cursor:'pointer',background:done?'#F0FDF4':(n===cur?'#FFFBEB':'#F8FAFC'),borderBottom:open?'1px solid #F1F5F9':'none'}}>
+    <div style={{border:'1px solid '+(n===cur&&!done?'#FFE2A8':'#E5E5EA'),borderRadius:14,overflow:'hidden',background:'white'}}>
+      <div onClick={onToggle} style={{display:'flex',alignItems:'center',gap:10,padding:'12px 16px',cursor:'pointer',background:done?'#EFFBF1':(n===cur?'#FFF6E6':'#F9F9FB'),borderBottom:open?'1px solid #F2F2F7':'none'}}>
         <span style={{width:24,height:24,borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:800,color:'white',background:st.c}}>{done?<IcCheck size={14}/>:n}</span>
-        <span style={{fontSize:14,fontWeight:700,color:'#1E293B',flex:1}}>{n}. {STAGE_TITLES[n-1]}</span>
+        <span style={{fontSize:14,fontWeight:700,color:'#1C1C1E',flex:1}}>{n}. {STAGE_TITLES[n-1]}</span>
         <span style={{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:999,background:st.bg,color:st.c}}>{st.label}</span>
-        <IcChevD size={16} style={{color:'#94A3B8',flexShrink:0,transform:open?'rotate(180deg)':'none',transition:'transform .2s'}}/>
+        <IcChevD size={16} style={{color:'#AEAEB2',flexShrink:0,transform:open?'rotate(180deg)':'none',transition:'transform .2s'}}/>
       </div>
       {open&&<div style={{padding:16,display:'flex',flexDirection:'column',gap:12}}>{children}</div>}
     </div>
@@ -826,27 +844,27 @@ function Drawer({task,onClose,setStage,setRoot,onDelete,assignees}){
 
   return (
     <>
-      <div onClick={onClose} style={{position:'fixed',inset:0,background:'rgba(15,23,42,.35)',zIndex:9990}}/>
-      <div style={{position:'fixed',top:0,right:0,bottom:0,width:480,maxWidth:'100vw',background:'#F8FAFC',zIndex:9991,boxShadow:'-12px 0 40px -12px rgba(16,24,40,.4)',display:'flex',flexDirection:'column',animation:'slideIn .22s ease'}}>
+      <div onClick={onClose} style={{position:'fixed',inset:0,background:'rgba(0,0,0,.32)',backdropFilter:'blur(3px)',WebkitBackdropFilter:'blur(3px)',zIndex:9990,animation:'fadeIn .2s ease'}}/>
+      <div style={{position:'fixed',top:0,right:0,bottom:0,width:480,maxWidth:'100vw',background:'#F2F2F7',zIndex:9991,boxShadow:'-12px 0 48px -12px rgba(0,0,0,.35)',display:'flex',flexDirection:'column',animation:'slideIn .28s cubic-bezier(.32,.72,0,1)'}}>
         {/* header */}
-        <div style={{background:'white',borderBottom:'1px solid #EAEDF4',padding:'16px 20px',flexShrink:0}}>
+        <div style={{background:'rgba(255,255,255,.8)',backdropFilter:'saturate(180%) blur(20px)',WebkitBackdropFilter:'saturate(180%) blur(20px)',borderBottom:'1px solid rgba(0,0,0,.07)',padding:'16px 20px',flexShrink:0}}>
           <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:8}}>
             <div style={{minWidth:0,flex:1}}>
               <div style={{display:'flex',alignItems:'center',gap:9,flexWrap:'wrap'}}>
-                <span style={{fontSize:17,fontWeight:800,color:'#0F172A'}}>{task.storeName}</span>
-                <span style={{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:999,background:task.status==='resolved'?'#ECFDF5':'#FFFBEB',color:task.status==='resolved'?'#047857':'#D97706'}}>{task.status==='resolved'?'완료':`${cur}. ${STAGE_SHORT[cur-1]} 진행중`}</span>
+                <span style={{fontSize:17,fontWeight:800,color:'#1C1C1E'}}>{task.storeName}</span>
+                <span style={{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:999,background:task.status==='resolved'?'#E7F9ED':'#FFF6E6',color:task.status==='resolved'?'#248A3D':'#C04E00'}}>{task.status==='resolved'?'완료':`${cur}. ${STAGE_SHORT[cur-1]} 진행중`}</span>
               </div>
-              <div style={{display:'flex',alignItems:'center',gap:7,marginTop:5,fontSize:12,color:'#94A3B8',flexWrap:'wrap'}}>
+              <div style={{display:'flex',alignItems:'center',gap:7,marginTop:5,fontSize:12,color:'#AEAEB2',flexWrap:'wrap'}}>
                 <span>#{task.storeId}</span><span>·</span><span>{task.assignee}</span><span>·</span><span>소싱 {task.sourcingDate}</span>
               </div>
             </div>
             <div style={{display:'flex',gap:4,flexShrink:0}}>
-              <button onClick={editMode?()=>setEditMode(false):startEdit} title="수정" style={{padding:7,borderRadius:8,border:'1px solid #E2E8F0',background:editMode?'#EFF6FF':'white',color:editMode?'#3B82F6':'#64748B',cursor:'pointer',display:'flex'}}><IcEdit size={15}/></button>
-              <button onClick={onClose} title="닫기" style={{padding:7,borderRadius:8,border:'1px solid #E2E8F0',background:'white',color:'#64748B',cursor:'pointer',display:'flex'}}><IcX size={16}/></button>
+              <button onClick={editMode?()=>setEditMode(false):startEdit} title="수정" style={{padding:7,borderRadius:8,border:'1px solid #E5E5EA',background:editMode?'#EBF4FF':'white',color:editMode?'#007AFF':'#8E8E93',cursor:'pointer',display:'flex'}}><IcEdit size={15}/></button>
+              <button onClick={onClose} title="닫기" style={{padding:7,borderRadius:8,border:'1px solid #E5E5EA',background:'white',color:'#8E8E93',cursor:'pointer',display:'flex'}}><IcX size={16}/></button>
             </div>
           </div>
           {editMode&&ef&&(
-            <div style={{marginTop:14,padding:14,borderRadius:12,background:'#F8FAFC',border:'1px solid #E2E8F0',display:'flex',flexDirection:'column',gap:10}}>
+            <div style={{marginTop:14,padding:14,borderRadius:12,background:'#F9F9FB',border:'1px solid #E5E5EA',display:'flex',flexDirection:'column',gap:10}}>
               <div style={{display:'flex',gap:10}}>
                 <Fld label="상호 *" value={ef.storeName} onChange={v=>setEf(p=>({...p,storeName:v}))}/>
                 <Fld label="스토어ID *" value={ef.storeId} onChange={v=>setEf(p=>({...p,storeId:v}))}/>
@@ -854,15 +872,15 @@ function Drawer({task,onClose,setStage,setRoot,onDelete,assignees}){
               <div style={{display:'flex',gap:10}}>
                 <Fld label="소싱일 *" type="date" value={ef.sourcingDate} onChange={v=>setEf(p=>({...p,sourcingDate:v}))}/>
                 <div style={{flex:1}}>
-                  <label style={{display:'block',fontSize:11,fontWeight:700,color:'#64748B',marginBottom:5}}>담당자 *</label>
-                  <select value={ef.assignee} onChange={e=>setEf(p=>({...p,assignee:e.target.value}))} style={{width:'100%',border:'1px solid #E2E8F0',borderRadius:9,padding:'9px 11px',fontSize:13,background:'#F8FAFC'}}>
+                  <label style={{display:'block',fontSize:11,fontWeight:700,color:'#8E8E93',marginBottom:5}}>담당자 *</label>
+                  <select value={ef.assignee} onChange={e=>setEf(p=>({...p,assignee:e.target.value}))} style={{width:'100%',border:'1px solid #E5E5EA',borderRadius:9,padding:'9px 11px',fontSize:13,background:'#F9F9FB'}}>
                     <option value="">선택</option>{assignees.map(a=><option key={a.id}>{a.name}</option>)}
                   </select>
                 </div>
               </div>
               <div style={{display:'flex',gap:8,justifyContent:'flex-end'}}>
-                <button onClick={()=>setEditMode(false)} style={{padding:'8px 16px',borderRadius:9,border:'1px solid #E2E8F0',background:'white',color:'#64748B',fontSize:13,fontWeight:600,cursor:'pointer'}}>취소</button>
-                <button onClick={saveEdit} disabled={!efOk} style={{padding:'8px 16px',borderRadius:9,border:'none',background:efOk?'#3B82F6':'#93C5FD',color:'white',fontSize:13,fontWeight:700,cursor:efOk?'pointer':'not-allowed'}}>저장</button>
+                <button onClick={()=>setEditMode(false)} style={{padding:'8px 16px',borderRadius:9,border:'1px solid #E5E5EA',background:'white',color:'#8E8E93',fontSize:13,fontWeight:600,cursor:'pointer'}}>취소</button>
+                <button onClick={saveEdit} disabled={!efOk} style={{padding:'8px 16px',borderRadius:9,border:'none',background:efOk?'#007AFF':'#99C9FF',color:'white',fontSize:13,fontWeight:700,cursor:efOk?'pointer':'not-allowed'}}>저장</button>
               </div>
             </div>
           )}
@@ -874,16 +892,16 @@ function Drawer({task,onClose,setStage,setRoot,onDelete,assignees}){
           <StageSection n={1} task={task} {...acc(1)}>
             <Chk checked={s.s1.preCallCheck} onChange={v=>setStage(id,'s1',{preCallCheck:v})} label="통화 전 확인 (스토어정보·전화번호·계좌정보 사전 확인)"/>
             <Chk checked={s.s1.inspectionDone} onChange={v=>setStage(id,'s1',{inspectionDone:v})} label="인스팩션 완료"/>
-            <div><label style={{display:'block',fontSize:11,fontWeight:700,color:'#64748B',marginBottom:6}}>오픈지역 여부 (단계7 분기)</label>
-              <Pick value={task.openArea} onChange={v=>setRoot(id,{openArea:v})} options={[['open','오픈지역','#3B82F6'],['unopen','미오픈지역','#8B5CF6']]}/>
+            <div><label style={{display:'block',fontSize:11,fontWeight:700,color:'#8E8E93',marginBottom:6}}>오픈지역 여부 (단계7 분기)</label>
+              <Pick value={task.openArea} onChange={v=>setRoot(id,{openArea:v})} options={[['open','오픈지역','#007AFF'],['unopen','미오픈지역','#AF52DE']]}/>
             </div>
           </StageSection>
 
           <StageSection n={2} task={task} {...acc(2)}>
-            <div><label style={{display:'block',fontSize:11,fontWeight:700,color:'#64748B',marginBottom:6}}>테블릿 도착</label>
-              <Pick value={s.s2.tabletArrived} onChange={v=>setStage(id,'s2',{tabletArrived:v})} options={[['arrived','도착','#10B981'],['not_arrived','미도착','#94A3B8']]}/></div>
-            <div><label style={{display:'block',fontSize:11,fontWeight:700,color:'#64748B',marginBottom:6}}>인터넷 연결</label>
-              <Pick value={s.s2.internet} onChange={v=>setStage(id,'s2',{internet:v})} options={[['success','성공','#10B981'],['fail','실패','#EF4444']]}/></div>
+            <div><label style={{display:'block',fontSize:11,fontWeight:700,color:'#8E8E93',marginBottom:6}}>테블릿 도착</label>
+              <Pick value={s.s2.tabletArrived} onChange={v=>setStage(id,'s2',{tabletArrived:v})} options={[['arrived','도착','#34C759'],['not_arrived','미도착','#AEAEB2']]}/></div>
+            <div><label style={{display:'block',fontSize:11,fontWeight:700,color:'#8E8E93',marginBottom:6}}>인터넷 연결</label>
+              <Pick value={s.s2.internet} onChange={v=>setStage(id,'s2',{internet:v})} options={[['success','성공','#34C759'],['fail','실패','#FF3B30']]}/></div>
           </StageSection>
 
           <StageSection n={3} task={task} {...acc(3)}>
@@ -907,7 +925,7 @@ function Drawer({task,onClose,setStage,setRoot,onDelete,assignees}){
           </StageSection>
 
           <StageSection n={5} task={task} {...acc(5)}>
-            <Pick value={s.s5.feeGuide} onChange={v=>setStage(id,'s5',{feeGuide:v})} options={[['done','안내완료','#10B981'],['not_yet','미안내(Ins)','#F59E0B']]}/>
+            <Pick value={s.s5.feeGuide} onChange={v=>setStage(id,'s5',{feeGuide:v})} options={[['done','안내완료','#34C759'],['not_yet','미안내(Ins)','#FF9500']]}/>
           </StageSection>
 
           <StageSection n={6} task={task} {...acc(6)}>
@@ -919,17 +937,17 @@ function Drawer({task,onClose,setStage,setRoot,onDelete,assignees}){
               ? <Fld label="라이브 희망일 (오픈지역)" type="date" value={s.s7.liveDateWish} onChange={v=>setStage(id,'s7',{liveDateWish:v})}/>
               : task.openArea==='unopen'
                 ? <Chk checked={s.s7.smsPlanned} onChange={v=>setStage(id,'s7',{smsPlanned:v})} label="오픈일 확정 시 SMS 안내 예정 (미오픈지역)"/>
-                : <div style={{fontSize:12,color:'#94A3B8',padding:'4px 2px'}}>단계1에서 오픈지역 여부를 먼저 선택하세요.</div>}
+                : <div style={{fontSize:12,color:'#AEAEB2',padding:'4px 2px'}}>단계1에서 오픈지역 여부를 먼저 선택하세요.</div>}
           </StageSection>
 
           <StageSection n={8} task={task} {...acc(8)}>
             <Fld label="해피콜 결과값" value={s.s8.sfResult} onChange={v=>setStage(id,'s8',{sfResult:v})} placeholder="예: 라이브 확정"/>
             <div>
-              <label style={{display:'block',fontSize:11,fontWeight:700,color:'#64748B',marginBottom:5}}>라이브일정 등 메모</label>
-              <textarea value={s.s8.sfMemo||''} onChange={e=>setStage(id,'s8',{sfMemo:e.target.value})} rows={3} style={{width:'100%',border:'1px solid #E2E8F0',borderRadius:9,padding:'9px 11px',fontSize:13,background:'#F8FAFC',resize:'vertical',fontFamily:'inherit'}}/>
+              <label style={{display:'block',fontSize:11,fontWeight:700,color:'#8E8E93',marginBottom:5}}>라이브일정 등 메모</label>
+              <textarea value={s.s8.sfMemo||''} onChange={e=>setStage(id,'s8',{sfMemo:e.target.value})} rows={3} style={{width:'100%',border:'1px solid #E5E5EA',borderRadius:9,padding:'9px 11px',fontSize:13,background:'#F9F9FB',resize:'vertical',fontFamily:'inherit'}}/>
             </div>
             {task.status==='resolved'&&(
-              <div style={{display:'flex',alignItems:'center',gap:8,padding:'12px 14px',borderRadius:10,background:'#ECFDF5',border:'1px solid #A7F3D0',color:'#047857',fontSize:13,fontWeight:700}}>
+              <div style={{display:'flex',alignItems:'center',gap:8,padding:'12px 14px',borderRadius:10,background:'#E7F9ED',border:'1px solid #A7E9BB',color:'#248A3D',fontSize:13,fontWeight:700}}>
                 <IcCheck size={16}/>수고하셨습니다. (완료 처리됨 · 완료일 {fmt(new Date(task.resolvedAt))})
               </div>
             )}
@@ -938,8 +956,8 @@ function Drawer({task,onClose,setStage,setRoot,onDelete,assignees}){
         </div>
 
         {/* footer */}
-        <div style={{background:'white',borderTop:'1px solid #EAEDF4',padding:'12px 18px',flexShrink:0}}>
-          <button onClick={onDelete} style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'center',gap:7,padding:'11px 0',borderRadius:10,border:'1px solid #FECACA',background:'#FEF2F2',color:'#EF4444',fontSize:14,fontWeight:600,cursor:'pointer'}}><IcTrash size={15}/>이 Task 삭제</button>
+        <div style={{background:'white',borderTop:'1px solid #E5E5EA',padding:'12px 18px',flexShrink:0}}>
+          <button onClick={onDelete} style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'center',gap:7,padding:'11px 0',borderRadius:10,border:'1px solid #FFC9C5',background:'#FFECEB',color:'#FF3B30',fontSize:14,fontWeight:600,cursor:'pointer'}}><IcTrash size={15}/>이 Task 삭제</button>
         </div>
       </div>
     </>
